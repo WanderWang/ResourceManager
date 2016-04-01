@@ -18,6 +18,13 @@ module RES {
         itemsLoaded: number;
 
         itemsTotal: number;
+        
+        resItem:any
+    }
+    
+    export interface ResourceItem {
+        
+        url:string;
     }
     
     export var fs:ResourceManager = new ResourceManager();
@@ -25,13 +32,16 @@ module RES {
 
     export module ResourceEvent {
 
-        export var CONFIG_COMPLETE = "CONFIG_COMPLETE";
+        export const CONFIG_COMPLETE = "CONFIG_COMPLETE";
 
-        export var GROUP_COMPLETE = "GROUP_COMPLETE";
+        export const GROUP_COMPLETE = "GROUP_COMPLETE";
 
-        export var GROUP_LOAD_ERROR = "GROUP_LOAD_ERROR";
+        export const GROUP_LOAD_ERROR = "GROUP_LOAD_ERROR";
 
-        export var GROUP_PROGRESS = "GROUP_PROGRESS";
+        export const GROUP_PROGRESS = "GROUP_PROGRESS";
+        
+        export const ITEM_LOAD_ERROR = "ITEM_LOAD_ERROR";
+        
     }
 
     export function addEventListener(type: string, listener: Function, thisObject: any) {

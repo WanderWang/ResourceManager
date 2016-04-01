@@ -9,7 +9,7 @@
 				"async.min.js",
 				"FileSystem.ts",
 				"ResourceShim.ts",
-				"../typings/async/async.d.ts"
+				"../libs/modules/async/async.d.ts"
 			],
 			"root": "resourcemanager"
 		}
