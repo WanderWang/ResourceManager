@@ -1,0 +1,11 @@
+{
+  "name": "resourcemanager",
+  "dependence": ["core"],
+  "source":".",
+  "file_list" : [
+    "async.min.js",
+    "FileSystem.ts",
+    "ResourceShim.ts",
+    "../typings/async/async.d.ts"
+  ]
+}

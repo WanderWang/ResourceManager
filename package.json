@@ -1,0 +1,17 @@
+{
+	"name": "egret",
+	"version": "3.0.5",
+	"modules": [
+		{
+			"name": "resourcemanager",
+			"description": "resourcemanager",
+			"files": [
+				"async.min.js",
+				"FileSystem.ts",
+				"ResourceShim.ts",
+				"../typings/async/async.d.ts"
+			],
+			"root": "resourcemanager"
+		}
+	]
+}
