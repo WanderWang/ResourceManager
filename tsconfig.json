@@ -1,8 +1,8 @@
 {
-    "compilerOptions": {
-        "target": "es5"
-    },
-    "exclude": [
-        "bin"
-    ]
+   "compilerOptions": {
+      "target": "es5"
+   },
+   "exclude": [
+      "node_modules","bin","libs/modules/resourcemanager"
+   ]
 }

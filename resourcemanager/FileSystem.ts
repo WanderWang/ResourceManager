@@ -49,13 +49,8 @@ class ResourceManager {
 
     }
 
-    /**
-     * temp 
-     * */
     public preload(path: string | Array<string>) {
 
-
-        var testObject = { name: '111' };
         var paths: Array<string> = [];
         if (typeof path === "string") {
             paths = [path];

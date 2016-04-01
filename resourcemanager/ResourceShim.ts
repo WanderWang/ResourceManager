@@ -2,9 +2,6 @@ class ResourceShim extends egret.EventDispatcher {
 
 }
 
-
-
-
 var shim:ResourceShim = new ResourceShim();
 
 var resourceManager = new ResourceManager();
@@ -54,7 +51,7 @@ module RES {
 
     export function loadConfig(configFile: string, resourceRoot: string) {
        
-       var onChange = (type,resource:ResourceFile) => {
+       const onChange = (type,resource:ResourceFile) => {
            shim.dispatchEvent(new ResourceEvent(RES.ResourceEvent.CONFIG_COMPLETE));
        }
        resourceManager.onChange = onChange;

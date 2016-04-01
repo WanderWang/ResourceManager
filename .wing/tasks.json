@@ -1,10 +1,33 @@
 {
-	// See http://go.microsoft.com/fwlink/?LinkId=733558
-	// for the documentation about the tasks.json format
-	"version": "0.1.0",
-	"command": "tsc",
-	"isShellCommand": true,
-	"args": ["-p", "tsconfig_modules.json"],
-	"showOutput": "silent",
-	"problemMatcher": "$tsc"
+   "version": "0.1.0",
+   "command": "egret",
+   "isShellCommand": true,
+   "tasks": [
+      {
+         "taskName": "build",
+         "showOutput": "silent",
+         "args": [
+            "build",
+            "-sourcemap"
+         ],
+         "problemMatcher": "$tsc"
+      },
+      {
+         "taskName": "clean",
+         "showOutput": "silent",
+         "args": [
+            "build",
+            "-e"
+         ],
+         "problemMatcher": "$tsc"
+      },
+      {
+         "taskName": "publish",
+         "showOutput": "silent",
+         "args": [
+            "publish"
+         ],
+         "problemMatcher": "$tsc"
+      }
+   ]
 }
