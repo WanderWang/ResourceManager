@@ -21,7 +21,7 @@ module resource {
 
     }
 
-    enum ResourceState {
+    export enum ResourceState {
 
         UNLOADED,
 
@@ -39,7 +39,7 @@ module resource {
         public onChange: (type, resource: ResourceFile) => void
 
 
-        public resourceMatch: Function;
+        public resourceMatcher: (url) => ResourceFile;
 
         private q;
 
@@ -67,8 +67,7 @@ module resource {
                 paths = path;
             }
             var tasks = paths.map((p) => {
-
-                var resource = new JsonResource();
+                var resource = this.resourceMatcher(p);
                 resource.path = p;
                 return resource;
 

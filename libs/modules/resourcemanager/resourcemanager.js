@@ -32,7 +32,7 @@ var resource;
                 paths = path;
             }
             var tasks = paths.map(function (p) {
-                var resource = new JsonResource();
+                var resource = _this.resourceMatcher(p);
                 resource.path = p;
                 return resource;
             });
@@ -122,6 +122,15 @@ var ResourceShim = (function (_super) {
 }(egret.EventDispatcher));
 var shim = new ResourceShim();
 var resourceManager = new resource.Core();
+resourceManager.resourceMatcher = function (path) {
+    if (path.match(/.json/)) {
+        return new resource.JsonResource();
+    }
+    else if (path.match(/.jpg/) || path.match(/.png/)) {
+        return new resource.ImageResource();
+    }
+    return null;
+};
 var RES;
 (function (RES) {
     var ResourceEvent = (function (_super) {

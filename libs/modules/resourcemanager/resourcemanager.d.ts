@@ -1,7 +1,7 @@
 declare module resource {
     class Core {
         onChange: (type, resource: ResourceFile) => void;
-        resourceMatch: Function;
+        resourceMatcher: (url) => ResourceFile;
         private q;
         private config;
         exists(): Boolean;

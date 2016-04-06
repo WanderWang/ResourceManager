@@ -1,4 +1,4 @@
-module resconfig {
+module RES.config {
 
     export interface Config {
 
@@ -21,6 +21,8 @@ module resconfig {
 
         keys: string;
 
+        state: resource.ResourceState;
+
 
     }
 
@@ -33,8 +35,12 @@ module resconfig {
     export interface Resource {
 
         name: string;
+
         type: string;
+
         url: string;
+
+        state: resource.ResourceState;
     }
 
 }
@@ -51,6 +57,19 @@ class ResourceShim extends egret.EventDispatcher {
 var shim: ResourceShim = new ResourceShim();
 
 var resourceManager = new resource.Core();
+resourceManager.resourceMatcher = (path) => {
+
+    if (path.match(/.json/)) {
+        return new resource.JsonResource();
+    }
+    else if (path.match(/.jpg/) || path.match(/.png/)) {
+        return new resource.ImageResource();
+    }
+    return null;
+
+
+
+}
 
 module RES {
 
@@ -96,22 +115,22 @@ module RES {
     }
 
     var configFileName: string;
-    
-    var resourceRootName:string;
 
-    var config: resconfig.Config;
+    var resourceRootName: string;
+
+    var config: config.Config;
 
     function onChange(type, resource: resource.ResourceFile) {
-        
-        console.log (`load ${type} : ${resource.path}`)
-        
+
+        console.log(`load ${type} : ${resource.path}`)
+
         if (resource.path == configFileName) {
 
             var data = resource.data;
-            var groups: resconfig.GroupCollection = {};
-            var resources: resconfig.ResourceCollection = {};
-            const groupmapper = (group: resconfig.Group) => groups[group.name] = group
-            const resourcemapper = (resource:resconfig.Resource) => resources[resource.name] = resource;
+            var groups: config.GroupCollection = {};
+            var resources: config.ResourceCollection = {};
+            const groupmapper = (group: config.Group) => groups[group.name] = group
+            const resourcemapper = (resource: config.Resource) => resources[resource.name] = resource;
             data.groups.forEach(groupmapper);
             data.resources.forEach(resourcemapper);
             config = { resources, groups };
