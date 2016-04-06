@@ -144,9 +144,15 @@ var RES;
     }
     RES.removeEventListener = removeEventListener;
     var configFileName;
+    var config;
     function onChange(type, resource) {
         if (resource.path == configFileName) {
-            config = resource.data;
+            var data = resource.data;
+            var groups = {};
+            var resources = {};
+            var groupmapper = function (group) { return groups[group.name] = group; };
+            data.groups.map(groupmapper);
+            config = { resources: resources, groups: groups };
             shim.dispatchEvent(new ResourceEvent(RES.ResourceEvent.CONFIG_COMPLETE));
         }
     }
@@ -154,27 +160,14 @@ var RES;
         configFileName = configFile;
         resourceManager.onChange = onChange;
         resourceManager.preload(configFile);
-        return;
-        // var request = new egret.URLRequest(configFile);
-        // var loader = new egret.URLLoader();
-        // loader.dataFormat = egret.URLLoaderDataFormat.TEXT;
-        // loader.addEventListener(egret.Event.COMPLETE,onConfigLoadComplete,this);
-        // loader.load(request);
-        // setTimeout(()=> dispatchResourceEvent(),1000);
     }
     RES.loadConfig = loadConfig;
-    var config;
-    function onConfigLoadComplete(e) {
-        var loader = e.target;
-        loader.removeEventListener(egret.Event.COMPLETE, onConfigLoadComplete, this);
-        config = loader.data;
-        console.log(JSON.stringify(config));
-    }
     function dispatchResourceEvent() {
         shim.dispatchEvent(new RES.ResourceEvent(RES.ResourceEvent.CONFIG_COMPLETE));
     }
     function loadGroup(groupName) {
-        console.log(groupName, config);
+        var group = config.groups[groupName];
+        console.log("loadgroup:" + groupName, JSON.stringify(group));
     }
     RES.loadGroup = loadGroup;
     function getRes(resourceName) {

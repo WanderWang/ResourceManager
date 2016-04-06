@@ -1,30 +1,39 @@
+module resconfig {
 
-interface ResConfig {
+    export interface ResConfig {
 
-    resources: Array<ResResourceConfig>;
+        resources: ResResourceCollection;
 
-    groups: Array<ResGroupConfig>;
+        groups: ResGroupCollection;
 
+    }
+
+    export interface ResGroupCollection {
+
+        [name: string]: ResGroup;
+
+    }
+
+
+    export interface ResGroup {
+
+        name: string;
+
+        keys: string;
+
+
+    }
+
+    export interface ResResourceCollection {
+
+        [name: string]: string;
+
+    }
 
 }
 
-interface ResGroupConfig {
 
-    name: string;
 
-    keys: string;
-
-}
-
-interface ResResourceConfig {
-
-    name: string;
-
-    type: string;
-
-    url: string;
-
-}
 
 
 
@@ -81,9 +90,17 @@ module RES {
 
     var configFileName: string;
 
+    var config: resconfig.ResConfig;
+
     function onChange(type, resource: ResourceFile) {
         if (resource.path == configFileName) {
-            config = resource.data;
+
+            var data = resource.data;
+            var groups: resconfig.ResGroupCollection = {};
+            var resources:resconfig.ResResourceCollection = {};
+            const groupmapper = (group: resconfig.ResGroup) => groups[group.name] = group
+            data.groups.map(groupmapper);
+            config = {resources,groups};
             shim.dispatchEvent(new ResourceEvent(RES.ResourceEvent.CONFIG_COMPLETE));
         }
     }
@@ -92,33 +109,21 @@ module RES {
         configFileName = configFile;
         resourceManager.onChange = onChange;
         resourceManager.preload(configFile);
-        return;
 
-        // var request = new egret.URLRequest(configFile);
-        // var loader = new egret.URLLoader();
-        // loader.dataFormat = egret.URLLoaderDataFormat.TEXT;
-        // loader.addEventListener(egret.Event.COMPLETE,onConfigLoadComplete,this);
-        // loader.load(request);
 
-        // setTimeout(()=> dispatchResourceEvent(),1000);
     }
 
 
-    var config: ResConfig;
 
-    function onConfigLoadComplete(e: egret.Event) {
-        var loader: egret.URLLoader = <egret.URLLoader>e.target;
-        loader.removeEventListener(egret.Event.COMPLETE, onConfigLoadComplete, this);
-        config = loader.data;
-        console.log(JSON.stringify(config));
-    }
 
     function dispatchResourceEvent() {
         shim.dispatchEvent(new RES.ResourceEvent(RES.ResourceEvent.CONFIG_COMPLETE));
     }
 
     export function loadGroup(groupName) {
-        console.log(groupName, config)
+
+        var group = config.groups[groupName];
+        console.log(`loadgroup:${groupName}`, JSON.stringify(group))
     }
 
     export function getRes(resourceName): any {
