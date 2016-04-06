@@ -50,7 +50,7 @@ class ResourceShim extends egret.EventDispatcher {
 
 var shim: ResourceShim = new ResourceShim();
 
-var resourceManager = new ResourceManager();
+var resourceManager = new resource.Core();
 
 module RES {
 
@@ -70,7 +70,7 @@ module RES {
         url: string;
     }
 
-    export var fs: ResourceManager = new ResourceManager();
+    export var fs: resource.Core = new resource.Core();
 
 
     export module ResourceEvent {
@@ -101,7 +101,7 @@ module RES {
 
     var config: resconfig.Config;
 
-    function onChange(type, resource: ResourceFile) {
+    function onChange(type, resource: resource.ResourceFile) {
         
         console.log (`load ${type} : ${resource.path}`)
         

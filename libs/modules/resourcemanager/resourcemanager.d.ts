@@ -1,49 +1,41 @@
-interface ResourceConfigMap {
-    [index: string]: ResourceFile;
-}
-interface ResourceConfig {
-    loadedState: ResourceState;
-}
-declare enum ResourceState {
-    UNLOADED = 0,
-    LOADING = 1,
-    LOADED = 2,
-}
-declare class ResourceManager {
-    onChange: (type, resource: ResourceFile) => void;
-    private q;
-    private config;
-    exists(): Boolean;
-    readFile(path: string): ResourceFile;
-    writeFile(): void;
-    preload(path: string | Array<string>): void;
-}
-interface ResourceFile {
-    path: string;
-    data: any;
-    preload(callback: any): any;
-    load(callback: any): any;
-    unload(): any;
-    dispose(): any;
-}
-declare class JsonResource implements ResourceFile {
-    path: string;
-    data: any;
-    callback: Function;
-    preload(callback: any): void;
-    private onComplete(e);
-    load(callback: any): void;
-    unload(): void;
-    dispose(): void;
-}
-declare class ImageResource implements ResourceFile {
-    path: string;
-    data: egret.Texture;
-    preload(callback: any): void;
-    private onComplete(e);
-    load(callback: any): void;
-    unload(): void;
-    dispose(): void;
+declare module resource {
+    class Core {
+        onChange: (type, resource: ResourceFile) => void;
+        resourceMatch: Function;
+        private q;
+        private config;
+        exists(): Boolean;
+        readFile(path: string): ResourceFile;
+        writeFile(): void;
+        preload(path: string | Array<string>): void;
+    }
+    interface ResourceFile {
+        path: string;
+        data: any;
+        preload(callback: any): any;
+        load(callback: any): any;
+        unload(): any;
+        dispose(): any;
+    }
+    class JsonResource implements ResourceFile {
+        path: string;
+        data: any;
+        callback: Function;
+        preload(callback: any): void;
+        private onComplete(e);
+        load(callback: any): void;
+        unload(): void;
+        dispose(): void;
+    }
+    class ImageResource implements ResourceFile {
+        path: string;
+        data: egret.Texture;
+        preload(callback: any): void;
+        private onComplete(e);
+        load(callback: any): void;
+        unload(): void;
+        dispose(): void;
+    }
 }
 declare module resconfig {
     interface Config {
@@ -69,7 +61,7 @@ declare module resconfig {
 declare class ResourceShim extends egret.EventDispatcher {
 }
 declare var shim: ResourceShim;
-declare var resourceManager: ResourceManager;
+declare var resourceManager: resource.Core;
 declare module RES {
     class ResourceEvent extends egret.Event {
         groupName: string;
@@ -80,7 +72,7 @@ declare module RES {
     interface ResourceItem {
         url: string;
     }
-    var fs: ResourceManager;
+    var fs: resource.Core;
     module ResourceEvent {
         const CONFIG_COMPLETE: string;
         const GROUP_COMPLETE: string;

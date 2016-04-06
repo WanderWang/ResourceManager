@@ -3,110 +3,116 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var ResourceState;
-(function (ResourceState) {
-    ResourceState[ResourceState["UNLOADED"] = 0] = "UNLOADED";
-    ResourceState[ResourceState["LOADING"] = 1] = "LOADING";
-    ResourceState[ResourceState["LOADED"] = 2] = "LOADED";
-})(ResourceState || (ResourceState = {}));
-var ResourceManager = (function () {
-    function ResourceManager() {
-    }
-    ResourceManager.prototype.exists = function () {
-        return true;
-    };
-    ResourceManager.prototype.readFile = function (path) {
-        return new ImageResource();
-    };
-    ResourceManager.prototype.writeFile = function () {
-    };
-    ResourceManager.prototype.preload = function (path) {
-        var _this = this;
-        var paths = [];
-        if (typeof path === "string") {
-            paths = [path];
+var resource;
+(function (resource_1) {
+    var ResourceState;
+    (function (ResourceState) {
+        ResourceState[ResourceState["UNLOADED"] = 0] = "UNLOADED";
+        ResourceState[ResourceState["LOADING"] = 1] = "LOADING";
+        ResourceState[ResourceState["LOADED"] = 2] = "LOADED";
+    })(ResourceState || (ResourceState = {}));
+    var Core = (function () {
+        function Core() {
         }
-        else {
-            paths = path;
-        }
-        var tasks = paths.map(function (p) {
-            var resource = new JsonResource();
-            resource.path = p;
-            return resource;
-        });
-        var q = async.priorityQueue(function (task, callback) {
-            console.log('load ' + task.path);
-            task.preload(function () {
-                _this.onChange("complete", task);
-                callback();
-            });
-        }, 2);
-        this.q = q;
-        // assign a callback
-        q.drain = function () {
-            console.log('all items have been processed');
-            // q.push({ name: 'foo1' }, 0, function (err) {
-            //     console.log('finished processing foo1');
-            //     q.resume();
-            // });
+        Core.prototype.exists = function () {
+            return true;
         };
-        // add some items to the queue
-        q.push(tasks, 0, function (err) {
-            console.log('finished processing foo');
-        });
-    };
-    return ResourceManager;
-}());
-var JsonResource = (function () {
-    function JsonResource() {
-    }
-    JsonResource.prototype.preload = function (callback) {
-        this.callback = callback;
-        var request = new egret.URLRequest(this.path);
-        var loader = new egret.URLLoader();
-        loader.dataFormat = egret.URLLoaderDataFormat.TEXT;
-        loader.addEventListener(egret.Event.COMPLETE, this.onComplete, this);
-        loader.load(request);
-    };
-    JsonResource.prototype.onComplete = function (e) {
-        var loader = e.target;
-        loader.removeEventListener(egret.Event.COMPLETE, this.onComplete, this);
-        var text = loader.data;
-        this.data = JSON.parse(text);
-        this.callback();
-    };
-    JsonResource.prototype.load = function (callback) {
-    };
-    JsonResource.prototype.unload = function () {
-    };
-    JsonResource.prototype.dispose = function () {
-    };
-    return JsonResource;
-}());
-var ImageResource = (function () {
-    function ImageResource() {
-    }
-    ImageResource.prototype.preload = function (callback) {
-        var request = new egret.URLRequest(this.path);
-        var loader = new egret.URLLoader();
-        loader.dataFormat = egret.URLLoaderDataFormat.TEXTURE;
-        loader.addEventListener(egret.Event.COMPLETE, this.onComplete, this);
-        loader.load(request);
-    };
-    ImageResource.prototype.onComplete = function (e) {
-        var loader = e.target;
-        loader.removeEventListener(egret.Event.COMPLETE, this.onComplete, this);
-        var texture = loader.data;
-        this.data = texture;
-    };
-    ImageResource.prototype.load = function (callback) {
-    };
-    ImageResource.prototype.unload = function () {
-    };
-    ImageResource.prototype.dispose = function () {
-    };
-    return ImageResource;
-}());
+        Core.prototype.readFile = function (path) {
+            return new ImageResource();
+        };
+        Core.prototype.writeFile = function () {
+        };
+        Core.prototype.preload = function (path) {
+            var _this = this;
+            var paths = [];
+            if (typeof path === "string") {
+                paths = [path];
+            }
+            else {
+                paths = path;
+            }
+            var tasks = paths.map(function (p) {
+                var resource = new JsonResource();
+                resource.path = p;
+                return resource;
+            });
+            var q = async.priorityQueue(function (task, callback) {
+                console.log('load ' + task.path);
+                task.preload(function () {
+                    _this.onChange("complete", task);
+                    callback();
+                });
+            }, 2);
+            this.q = q;
+            // assign a callback
+            q.drain = function () {
+                console.log('all items have been processed');
+                // q.push({ name: 'foo1' }, 0, function (err) {
+                //     console.log('finished processing foo1');
+                //     q.resume();
+                // });
+            };
+            // add some items to the queue
+            q.push(tasks, 0, function (err) {
+                console.log('finished processing foo');
+            });
+        };
+        return Core;
+    }());
+    resource_1.Core = Core;
+    var JsonResource = (function () {
+        function JsonResource() {
+        }
+        JsonResource.prototype.preload = function (callback) {
+            this.callback = callback;
+            var request = new egret.URLRequest(this.path);
+            var loader = new egret.URLLoader();
+            loader.dataFormat = egret.URLLoaderDataFormat.TEXT;
+            loader.addEventListener(egret.Event.COMPLETE, this.onComplete, this);
+            loader.load(request);
+        };
+        JsonResource.prototype.onComplete = function (e) {
+            var loader = e.target;
+            loader.removeEventListener(egret.Event.COMPLETE, this.onComplete, this);
+            var text = loader.data;
+            this.data = JSON.parse(text);
+            this.callback();
+        };
+        JsonResource.prototype.load = function (callback) {
+        };
+        JsonResource.prototype.unload = function () {
+        };
+        JsonResource.prototype.dispose = function () {
+        };
+        return JsonResource;
+    }());
+    resource_1.JsonResource = JsonResource;
+    var ImageResource = (function () {
+        function ImageResource() {
+        }
+        ImageResource.prototype.preload = function (callback) {
+            var request = new egret.URLRequest(this.path);
+            var loader = new egret.URLLoader();
+            loader.dataFormat = egret.URLLoaderDataFormat.TEXTURE;
+            loader.addEventListener(egret.Event.COMPLETE, this.onComplete, this);
+            loader.load(request);
+        };
+        ImageResource.prototype.onComplete = function (e) {
+            var loader = e.target;
+            loader.removeEventListener(egret.Event.COMPLETE, this.onComplete, this);
+            var texture = loader.data;
+            this.data = texture;
+        };
+        ImageResource.prototype.load = function (callback) {
+        };
+        ImageResource.prototype.unload = function () {
+        };
+        ImageResource.prototype.dispose = function () {
+        };
+        return ImageResource;
+    }());
+    resource_1.ImageResource = ImageResource;
+})(resource || (resource = {}));
 var ResourceShim = (function (_super) {
     __extends(ResourceShim, _super);
     function ResourceShim() {
@@ -115,7 +121,7 @@ var ResourceShim = (function (_super) {
     return ResourceShim;
 }(egret.EventDispatcher));
 var shim = new ResourceShim();
-var resourceManager = new ResourceManager();
+var resourceManager = new resource.Core();
 var RES;
 (function (RES) {
     var ResourceEvent = (function (_super) {
@@ -126,7 +132,7 @@ var RES;
         return ResourceEvent;
     }(egret.Event));
     RES.ResourceEvent = ResourceEvent;
-    RES.fs = new ResourceManager();
+    RES.fs = new resource.Core();
     var ResourceEvent;
     (function (ResourceEvent) {
         ResourceEvent.CONFIG_COMPLETE = "CONFIG_COMPLETE";
