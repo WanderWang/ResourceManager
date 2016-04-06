@@ -16,9 +16,6 @@ declare class ResourceManager {
     exists(): Boolean;
     readFile(path: string): ResourceFile;
     writeFile(): void;
-    /**
-     * temp
-     * */
     preload(path: string | Array<string>): void;
 }
 interface ResourceFile {
@@ -32,6 +29,7 @@ interface ResourceFile {
 declare class JsonResource implements ResourceFile {
     path: string;
     data: any;
+    callback: Function;
     preload(callback: any): void;
     private onComplete(e);
     load(callback: any): void;
@@ -46,6 +44,19 @@ declare class ImageResource implements ResourceFile {
     load(callback: any): void;
     unload(): void;
     dispose(): void;
+}
+interface ResConfig {
+    resources: Array<ResResourceConfig>;
+    groups: Array<ResGroupConfig>;
+}
+interface ResGroupConfig {
+    name: string;
+    keys: string;
+}
+interface ResResourceConfig {
+    name: string;
+    type: string;
+    url: string;
 }
 declare class ResourceShim extends egret.EventDispatcher {
 }

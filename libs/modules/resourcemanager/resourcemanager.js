@@ -20,12 +20,8 @@ var ResourceManager = (function () {
     };
     ResourceManager.prototype.writeFile = function () {
     };
-    /**
-     * temp
-     * */
     ResourceManager.prototype.preload = function (path) {
         var _this = this;
-        var testObject = { name: '111' };
         var paths = [];
         if (typeof path === "string") {
             paths = [path];
@@ -40,8 +36,10 @@ var ResourceManager = (function () {
         });
         var q = async.priorityQueue(function (task, callback) {
             console.log('load ' + task.path);
-            _this.onChange("complete", task);
-            callback();
+            task.preload(function () {
+                _this.onChange("complete", task);
+                callback();
+            });
         }, 2);
         this.q = q;
         // assign a callback
@@ -63,6 +61,7 @@ var JsonResource = (function () {
     function JsonResource() {
     }
     JsonResource.prototype.preload = function (callback) {
+        this.callback = callback;
         var request = new egret.URLRequest(this.path);
         var loader = new egret.URLLoader();
         loader.dataFormat = egret.URLLoaderDataFormat.TEXT;
@@ -74,6 +73,7 @@ var JsonResource = (function () {
         loader.removeEventListener(egret.Event.COMPLETE, this.onComplete, this);
         var text = loader.data;
         this.data = JSON.parse(text);
+        this.callback();
     };
     JsonResource.prototype.load = function (callback) {
     };
@@ -143,10 +143,15 @@ var RES;
         shim.removeEventListener(type, listener, thisObject);
     }
     RES.removeEventListener = removeEventListener;
-    function loadConfig(configFile, resourceRoot) {
-        var onChange = function (type, resource) {
+    var configFileName;
+    function onChange(type, resource) {
+        if (resource.path == configFileName) {
+            config = resource.data;
             shim.dispatchEvent(new ResourceEvent(RES.ResourceEvent.CONFIG_COMPLETE));
-        };
+        }
+    }
+    function loadConfig(configFile, resourceRoot) {
+        configFileName = configFile;
         resourceManager.onChange = onChange;
         resourceManager.preload(configFile);
         return;
@@ -162,7 +167,8 @@ var RES;
     function onConfigLoadComplete(e) {
         var loader = e.target;
         loader.removeEventListener(egret.Event.COMPLETE, onConfigLoadComplete, this);
-        config = JSON.parse(loader.data);
+        config = loader.data;
+        console.log(JSON.stringify(config));
     }
     function dispatchResourceEvent() {
         shim.dispatchEvent(new RES.ResourceEvent(RES.ResourceEvent.CONFIG_COMPLETE));

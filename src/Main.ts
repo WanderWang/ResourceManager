@@ -89,7 +89,8 @@ class Main extends egret.DisplayObjectContainer {
      */
     private onItemLoadError(event:RES.ResourceEvent):void {
         console.warn("Url:" + event.resItem.url + " has failed to load");
-    }
+
+}
 
     /**
      * 资源组加载出错
@@ -183,7 +184,6 @@ class Main extends egret.DisplayObjectContainer {
      * Description file loading is successful, start to play the animation
      */
     private startAnimation(result:Array<any>):void {
-        var self:any = this;
 
         var parser:egret.HtmlTextParser = new egret.HtmlTextParser();
         var textflowArr:Array<Array<egret.ITextElement>> = [];
@@ -191,22 +191,22 @@ class Main extends egret.DisplayObjectContainer {
             textflowArr.push(parser.parser(result[i]));
         }
 
-        var textfield:egret.TextField = self.textfield;
+        var textfield:egret.TextField = this.textfield;
         var count:number = -1;
-        var change:Function = function () {
+        var change:Function =  ()=> {
             count++;
             if (count >= textflowArr.length) {
                 count = 0;
             }
             var lineArr = textflowArr[count];
 
-            self.changeDescription(textfield, lineArr);
+            this.changeDescription(textfield, lineArr);
 
             var tw = egret.Tween.get(textfield);
             tw.to({"alpha": 1}, 200);
             tw.wait(2000);
             tw.to({"alpha": 0}, 200);
-            tw.call(change, self);
+            tw.call(change, this);
         };
 
         change();

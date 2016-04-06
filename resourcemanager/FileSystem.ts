@@ -67,10 +67,12 @@ class ResourceManager {
         });
 
 
-        var q = async.priorityQueue<ResourceFile>((task, callback) => {
+        var q = async.priorityQueue<ResourceFile>((task: ResourceFile, callback) => {
             console.log('load ' + task.path);
-            this.onChange("complete", task);
-            callback();
+            task.preload(() => {
+                this.onChange("complete", task);
+                callback();
+            })
         }, 2);
 
         this.q = q;
@@ -124,8 +126,11 @@ class JsonResource implements ResourceFile {
     path: string;
 
     data: any;
+    
+    callback:Function;
 
     preload(callback) {
+        this.callback = callback;
         var request: egret.URLRequest = new egret.URLRequest(this.path);
         var loader: egret.URLLoader = new egret.URLLoader();
         loader.dataFormat = egret.URLLoaderDataFormat.TEXT;
@@ -138,6 +143,7 @@ class JsonResource implements ResourceFile {
         loader.removeEventListener(egret.Event.COMPLETE, this.onComplete, this);
         var text = loader.data;
         this.data = JSON.parse(text);
+        this.callback();
     }
 
 
