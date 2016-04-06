@@ -1,21 +1,21 @@
 module resconfig {
 
-    export interface ResConfig {
+    export interface Config {
 
-        resources: ResResourceCollection;
+        resources: ResourceCollection;
 
-        groups: ResGroupCollection;
-
-    }
-
-    export interface ResGroupCollection {
-
-        [name: string]: ResGroup;
+        groups: GroupCollection;
 
     }
 
+    export interface GroupCollection {
 
-    export interface ResGroup {
+        [name: string]: Group;
+
+    }
+
+
+    export interface Group {
 
         name: string;
 
@@ -24,10 +24,17 @@ module resconfig {
 
     }
 
-    export interface ResResourceCollection {
+    export interface ResourceCollection {
 
-        [name: string]: string;
+        [name: string]: Resource;
 
+    }
+
+    export interface Resource {
+
+        name: string;
+        type: string;
+        url: string;
     }
 
 }
@@ -89,24 +96,32 @@ module RES {
     }
 
     var configFileName: string;
+    
+    var resourceRootName:string;
 
-    var config: resconfig.ResConfig;
+    var config: resconfig.Config;
 
     function onChange(type, resource: ResourceFile) {
+        
+        console.log (`load ${type} : ${resource.path}`)
+        
         if (resource.path == configFileName) {
 
             var data = resource.data;
-            var groups: resconfig.ResGroupCollection = {};
-            var resources:resconfig.ResResourceCollection = {};
-            const groupmapper = (group: resconfig.ResGroup) => groups[group.name] = group
-            data.groups.map(groupmapper);
-            config = {resources,groups};
+            var groups: resconfig.GroupCollection = {};
+            var resources: resconfig.ResourceCollection = {};
+            const groupmapper = (group: resconfig.Group) => groups[group.name] = group
+            const resourcemapper = (resource:resconfig.Resource) => resources[resource.name] = resource;
+            data.groups.forEach(groupmapper);
+            data.resources.forEach(resourcemapper);
+            config = { resources, groups };
             shim.dispatchEvent(new ResourceEvent(RES.ResourceEvent.CONFIG_COMPLETE));
         }
     }
 
     export function loadConfig(configFile: string, resourceRoot: string) {
         configFileName = configFile;
+        resourceRootName = resourceRoot
         resourceManager.onChange = onChange;
         resourceManager.preload(configFile);
 
@@ -122,7 +137,17 @@ module RES {
 
     export function loadGroup(groupName) {
 
-        var group = config.groups[groupName];
+        let group = config.groups[groupName];
+        let resourceNames = group.keys.split(",");
+        let loadResource = (resourceName) => {
+            let resource = config.resources[resourceName];
+            if (resource) {
+                resourceManager.preload(resourceRootName + "/" + resource.url);
+            }
+        }
+        if (resourceNames) {
+            resourceNames.forEach(loadResource);
+        }
         console.log(`loadgroup:${groupName}`, JSON.stringify(group))
     }
 

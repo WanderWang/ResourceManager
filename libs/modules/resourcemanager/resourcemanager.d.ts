@@ -46,19 +46,24 @@ declare class ImageResource implements ResourceFile {
     dispose(): void;
 }
 declare module resconfig {
-    interface ResConfig {
-        resources: ResResourceCollection;
-        groups: ResGroupCollection;
+    interface Config {
+        resources: ResourceCollection;
+        groups: GroupCollection;
     }
-    interface ResGroupCollection {
-        [name: string]: ResGroup;
+    interface GroupCollection {
+        [name: string]: Group;
     }
-    interface ResGroup {
+    interface Group {
         name: string;
         keys: string;
     }
-    interface ResResourceCollection {
-        [name: string]: string;
+    interface ResourceCollection {
+        [name: string]: Resource;
+    }
+    interface Resource {
+        name: string;
+        type: string;
+        url: string;
     }
 }
 declare class ResourceShim extends egret.EventDispatcher {

@@ -144,20 +144,25 @@ var RES;
     }
     RES.removeEventListener = removeEventListener;
     var configFileName;
+    var resourceRootName;
     var config;
     function onChange(type, resource) {
+        console.log("load " + type + " : " + resource.path);
         if (resource.path == configFileName) {
             var data = resource.data;
             var groups = {};
             var resources = {};
             var groupmapper = function (group) { return groups[group.name] = group; };
-            data.groups.map(groupmapper);
+            var resourcemapper = function (resource) { return resources[resource.name] = resource; };
+            data.groups.forEach(groupmapper);
+            data.resources.forEach(resourcemapper);
             config = { resources: resources, groups: groups };
             shim.dispatchEvent(new ResourceEvent(RES.ResourceEvent.CONFIG_COMPLETE));
         }
     }
     function loadConfig(configFile, resourceRoot) {
         configFileName = configFile;
+        resourceRootName = resourceRoot;
         resourceManager.onChange = onChange;
         resourceManager.preload(configFile);
     }
@@ -167,6 +172,16 @@ var RES;
     }
     function loadGroup(groupName) {
         var group = config.groups[groupName];
+        var resourceNames = group.keys.split(",");
+        var loadResource = function (resourceName) {
+            var resource = config.resources[resourceName];
+            if (resource) {
+                resourceManager.preload(resourceRootName + "/" + resource.url);
+            }
+        };
+        if (resourceNames) {
+            resourceNames.forEach(loadResource);
+        }
         console.log("loadgroup:" + groupName, JSON.stringify(group));
     }
     RES.loadGroup = loadGroup;
