@@ -1,4 +1,9 @@
 declare module resource {
+    enum State {
+        UNLOADED = 0,
+        LOADING = 1,
+        LOADED = 2,
+    }
     class Core {
         onChange: (type, resource: ResourceFile) => void;
         resourceMatcher: (url) => ResourceFile;
@@ -9,6 +14,8 @@ declare module resource {
         writeFile(): void;
         preload(path: string | Array<string>): void;
     }
+}
+declare module resource {
     interface ResourceFile {
         path: string;
         data: any;
@@ -30,6 +37,7 @@ declare module resource {
     class ImageResource implements ResourceFile {
         path: string;
         data: egret.Texture;
+        callback: Function;
         preload(callback: any): void;
         private onComplete(e);
         load(callback: any): void;
@@ -37,7 +45,7 @@ declare module resource {
         dispose(): void;
     }
 }
-declare module resconfig {
+declare module RES.config {
     interface Config {
         resources: ResourceCollection;
         groups: GroupCollection;
@@ -48,6 +56,8 @@ declare module resconfig {
     interface Group {
         name: string;
         keys: string;
+        state: resource.State;
+        resources: Array<Resource>;
     }
     interface ResourceCollection {
         [name: string]: Resource;
@@ -56,6 +66,7 @@ declare module resconfig {
         name: string;
         type: string;
         url: string;
+        state: resource.State;
     }
 }
 declare class ResourceShim extends egret.EventDispatcher {

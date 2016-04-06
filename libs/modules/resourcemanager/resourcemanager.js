@@ -5,12 +5,12 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var resource;
 (function (resource_1) {
-    var ResourceState;
-    (function (ResourceState) {
-        ResourceState[ResourceState["UNLOADED"] = 0] = "UNLOADED";
-        ResourceState[ResourceState["LOADING"] = 1] = "LOADING";
-        ResourceState[ResourceState["LOADED"] = 2] = "LOADED";
-    })(ResourceState || (ResourceState = {}));
+    (function (State) {
+        State[State["UNLOADED"] = 0] = "UNLOADED";
+        State[State["LOADING"] = 1] = "LOADING";
+        State[State["LOADED"] = 2] = "LOADED";
+    })(resource_1.State || (resource_1.State = {}));
+    var State = resource_1.State;
     var Core = (function () {
         function Core() {
         }
@@ -18,7 +18,7 @@ var resource;
             return true;
         };
         Core.prototype.readFile = function (path) {
-            return new ImageResource();
+            return new resource_1.ImageResource();
         };
         Core.prototype.writeFile = function () {
         };
@@ -60,6 +60,9 @@ var resource;
         return Core;
     }());
     resource_1.Core = Core;
+})(resource || (resource = {}));
+var resource;
+(function (resource) {
     var JsonResource = (function () {
         function JsonResource() {
         }
@@ -86,7 +89,7 @@ var resource;
         };
         return JsonResource;
     }());
-    resource_1.JsonResource = JsonResource;
+    resource.JsonResource = JsonResource;
     var ImageResource = (function () {
         function ImageResource() {
         }
@@ -96,12 +99,14 @@ var resource;
             loader.dataFormat = egret.URLLoaderDataFormat.TEXTURE;
             loader.addEventListener(egret.Event.COMPLETE, this.onComplete, this);
             loader.load(request);
+            this.callback = callback;
         };
         ImageResource.prototype.onComplete = function (e) {
             var loader = e.target;
             loader.removeEventListener(egret.Event.COMPLETE, this.onComplete, this);
             var texture = loader.data;
             this.data = texture;
+            this.callback();
         };
         ImageResource.prototype.load = function (callback) {
         };
@@ -111,7 +116,7 @@ var resource;
         };
         return ImageResource;
     }());
-    resource_1.ImageResource = ImageResource;
+    resource.ImageResource = ImageResource;
 })(resource || (resource = {}));
 var ResourceShim = (function (_super) {
     __extends(ResourceShim, _super);
@@ -161,19 +166,56 @@ var RES;
     var configFileName;
     var resourceRootName;
     var config;
-    function onChange(type, resource) {
-        console.log("load " + type + " : " + resource.path);
-        if (resource.path == configFileName) {
-            var data = resource.data;
-            var groups = {};
-            var resources = {};
-            var groupmapper = function (group) { return groups[group.name] = group; };
-            var resourcemapper = function (resource) { return resources[resource.name] = resource; };
-            data.groups.forEach(groupmapper);
+    function onChange(type, resourceFile) {
+        console.log("load " + type + " : " + resourceFile.path);
+        if (resourceFile.path == configFileName) {
+            var data = resourceFile.data;
+            var groups_1 = {};
+            var resources_1 = {};
+            var resourcemapper = function (resourceConfig) {
+                resources_1[resourceConfig.name] = resourceConfig;
+                resourceConfig.state = resource.State.UNLOADED;
+            };
             data.resources.forEach(resourcemapper);
-            config = { resources: resources, groups: groups };
+            var groupmapper = function (group) {
+                groups_1[group.name] = group;
+                var resourceNames = group.keys.split(",");
+                group.resources = resourceNames.map(function (resourceName) { return resources_1[resourceName]; });
+            };
+            data.groups.forEach(groupmapper);
+            config = { resources: resources_1, groups: groups_1 };
             shim.dispatchEvent(new ResourceEvent(RES.ResourceEvent.CONFIG_COMPLETE));
+            //test
+            window['config'] = config;
         }
+        else {
+            var resourceConfig = getResourceFromUrl(resourceFile.path);
+            resourceConfig.state = resource.State.LOADED;
+            for (var groupName in config.groups) {
+                var group = config.groups[groupName];
+                if (group.resources.every(isLoaded)) {
+                    if (group.state != resource.State.LOADED) {
+                        group.state = resource.State.LOADED;
+                        var event = new RES.ResourceEvent(RES.ResourceEvent.GROUP_COMPLETE);
+                        event.groupName = group.name;
+                        shim.dispatchEvent(event);
+                    }
+                }
+            }
+        }
+    }
+    function isLoaded(resourceConfig) {
+        return resourceConfig.state == resource.State.LOADED;
+    }
+    function getResourceFromUrl(url) {
+        var resources = config.resources;
+        for (var key in resources) {
+            var resource = resources[key];
+            if (resource.url === url) {
+                return resource;
+            }
+        }
+        return null;
     }
     function loadConfig(configFile, resourceRoot) {
         configFileName = configFile;
@@ -182,9 +224,6 @@ var RES;
         resourceManager.preload(configFile);
     }
     RES.loadConfig = loadConfig;
-    function dispatchResourceEvent() {
-        shim.dispatchEvent(new RES.ResourceEvent(RES.ResourceEvent.CONFIG_COMPLETE));
-    }
     function loadGroup(groupName) {
         var group = config.groups[groupName];
         var resourceNames = group.keys.split(",");

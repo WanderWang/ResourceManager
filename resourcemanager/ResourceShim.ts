@@ -21,7 +21,9 @@ module RES.config {
 
         keys: string;
 
-        state: resource.ResourceState;
+        state: resource.State;
+
+        resources: Array<Resource>;
 
 
     }
@@ -40,7 +42,7 @@ module RES.config {
 
         url: string;
 
-        state: resource.ResourceState;
+        state: resource.State;
     }
 
 }
@@ -120,22 +122,67 @@ module RES {
 
     var config: config.Config;
 
-    function onChange(type, resource: resource.ResourceFile) {
+    function onChange(type, resourceFile: resource.ResourceFile) {
 
-        console.log(`load ${type} : ${resource.path}`)
+        console.log(`load ${type} : ${resourceFile.path}`)
 
-        if (resource.path == configFileName) {
+        if (resourceFile.path == configFileName) {
 
-            var data = resource.data;
-            var groups: config.GroupCollection = {};
-            var resources: config.ResourceCollection = {};
-            const groupmapper = (group: config.Group) => groups[group.name] = group
-            const resourcemapper = (resource: config.Resource) => resources[resource.name] = resource;
-            data.groups.forEach(groupmapper);
+            let data = resourceFile.data;
+            let groups: config.GroupCollection = {};
+            let resources: config.ResourceCollection = {};
+
+            const resourcemapper = (resourceConfig: config.Resource) => {
+                resources[resourceConfig.name] = resourceConfig;
+                resourceConfig.state = resource.State.UNLOADED;
+            }
             data.resources.forEach(resourcemapper);
+
+            const groupmapper = (group: config.Group) => {
+                groups[group.name] = group;
+                let resourceNames = group.keys.split(",");
+                group.resources = resourceNames.map((resourceName) => resources[resourceName]);
+            }
+            data.groups.forEach(groupmapper);
+
             config = { resources, groups };
             shim.dispatchEvent(new ResourceEvent(RES.ResourceEvent.CONFIG_COMPLETE));
+
+            //test
+            window['config'] = config;
+
         }
+        else {
+
+            var resourceConfig = getResourceFromUrl(resourceFile.path);
+            resourceConfig.state = resource.State.LOADED;
+            for (var groupName in config.groups) {
+                var group = config.groups[groupName];
+                if (group.resources.every(isLoaded)) {
+                    if (group.state != resource.State.LOADED) {
+                        group.state = resource.State.LOADED;
+                        var event = new RES.ResourceEvent(RES.ResourceEvent.GROUP_COMPLETE);
+                        event.groupName = group.name;
+                        shim.dispatchEvent(event);
+                    }
+                }
+            }
+        }
+    }
+
+    function isLoaded(resourceConfig: config.Resource) {
+        return resourceConfig.state == resource.State.LOADED;
+    }
+
+    function getResourceFromUrl(url): config.Resource {
+        var resources = config.resources;
+        for (var key in resources) {
+            var resource = resources[key];
+            if (resource.url === url) {
+                return resource;
+            }
+        }
+        return null;
     }
 
     export function loadConfig(configFile: string, resourceRoot: string) {
@@ -145,13 +192,6 @@ module RES {
         resourceManager.preload(configFile);
 
 
-    }
-
-
-
-
-    function dispatchResourceEvent() {
-        shim.dispatchEvent(new RES.ResourceEvent(RES.ResourceEvent.CONFIG_COMPLETE));
     }
 
     export function loadGroup(groupName) {

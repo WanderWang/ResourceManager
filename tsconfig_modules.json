@@ -8,6 +8,7 @@
     },
     "files": [
         "resourcemanager/FileSystem.ts",
+        "resourcemanager/Resource.ts",
         "resourcemanager/ResourceShim.ts",
         "bin/async/async.d.ts",
         "libs/modules/egret/egret.d.ts",
