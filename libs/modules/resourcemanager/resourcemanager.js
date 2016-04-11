@@ -27,32 +27,25 @@ var resource;
         Core.prototype.writeFile = function (r) {
             this.fs[r.path] = r;
         };
-        Core.prototype.preload = function (path) {
+        Core.prototype.preload = function (path, callback) {
             var _this = this;
-            var paths = [];
-            if (typeof path === "string") {
-                paths = [path];
-            }
-            else {
-                paths = path;
-            }
+            var paths = [path];
             var tasks = paths.map(this.resourceMatcher);
-            var q = async.priorityQueue(function (r, callback) {
+            var q = async.priorityQueue(function (r, c) {
                 console.log('load ' + r.path);
                 r.preload(function () {
                     _this.writeFile(r);
+                    if (callback) {
+                        callback(r);
+                    }
                     _this.onChange("complete", r);
-                    callback();
+                    c();
                 });
             }, 2);
             this.q = q;
             // assign a callback
             q.drain = function () {
                 console.log('all items have been processed');
-                // q.push({ name: 'foo1' }, 0, function (err) {
-                //     console.log('finished processing foo1');
-                //     q.resume();
-                // });
             };
             // add some items to the queue
             q.push(tasks, 0, function (err) {
@@ -260,7 +253,13 @@ var RES;
         return resource ? resource.data : null;
     }
     RES.getRes = getRes;
-    function getResAsync(name, callback, thisObject) {
+    function getResAsync(resourceName, callback, thisObject) {
+        var config = getResourceFromName(resourceName);
+        var c = function (r) {
+            var callbackData = r ? r.data : null;
+            callback.call(thisObject, callbackData);
+        };
+        resourceManager.preload(config.url, c);
     }
     RES.getResAsync = getResAsync;
 })(RES || (RES = {}));

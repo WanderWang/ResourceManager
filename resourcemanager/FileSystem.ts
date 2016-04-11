@@ -57,24 +57,22 @@ module resource {
             this.fs[r.path] = r;
         }
 
-        public preload(path: string | Array<string>) {
+        public preload(path: string, callback?: (r: ResourceFile) => void) {
 
-            var paths: Array<string> = [];
-            if (typeof path === "string") {
-                paths = [path];
-            }
-            else {
-                paths = path;
-            }
+            var paths: Array<string> = [path];
+       
             var tasks = paths.map(this.resourceMatcher);
 
 
-            var q = async.priorityQueue<ResourceFile>((r: ResourceFile, callback) => {
+            var q = async.priorityQueue<ResourceFile>((r: ResourceFile, c) => {
                 console.log('load ' + r.path);
                 r.preload(() => {
                     this.writeFile(r);
+                    if (callback) {
+                        callback(r);
+                    }
                     this.onChange("complete", r);
-                    callback();
+                    c();
                 })
             }, 2);
 
@@ -84,10 +82,6 @@ module resource {
             // assign a callback
             q.drain = function () {
                 console.log('all items have been processed');
-                // q.push({ name: 'foo1' }, 0, function (err) {
-                //     console.log('finished processing foo1');
-                //     q.resume();
-                // });
 
             }
 

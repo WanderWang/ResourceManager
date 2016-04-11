@@ -12,7 +12,7 @@ declare module resource {
         exists(): Boolean;
         readFile(path: string): ResourceFile;
         writeFile(r: ResourceFile): void;
-        preload(path: string | Array<string>): void;
+        preload(path: string, callback?: (r: ResourceFile) => void): void;
     }
 }
 declare module resource {
@@ -98,7 +98,7 @@ declare module RES {
     function resourceMatcher(path: any): resource.ResourceFile;
     function loadConfig(configFile: string, resourceRoot: string): void;
     function loadGroup(groupName: any): void;
-    function getRes(resourceName: any): any;
-    function getResAsync(name: string, callback: Function, thisObject: any): void;
+    function getRes(resourceName: string): any;
+    function getResAsync(resourceName: string, callback: Function, thisObject: any): void;
 }
 declare var resourceManager: resource.Core;

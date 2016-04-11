@@ -102,36 +102,36 @@ module RES {
     export function removeEventListener(type: string, listener: Function, thisObject: any) {
         shim.removeEventListener(type, listener, thisObject);
     }
-    
-    export function resourceMatcher(path){
-    var result:resource.ResourceFile;
-    if (path.match(/.json/)) {
-        result = new resource.JsonResource();
-    }
-    else if (path.match(/.jpg/) || path.match(/.png/)) {
-        result = new resource.ImageResource();
-    }
-    result.path = path;
-    var realpath;
-    if (path.indexOf(resourceRootName) == -1){
-        realpath = resourceRootName + path; 
-    }
-    else{
-        realpath = path;
-    }
-    result.realPath = realpath;
-    return result;
+
+    export function resourceMatcher(path) {
+        var result: resource.ResourceFile;
+        if (path.match(/.json/)) {
+            result = new resource.JsonResource();
+        }
+        else if (path.match(/.jpg/) || path.match(/.png/)) {
+            result = new resource.ImageResource();
+        }
+        result.path = path;
+        var realpath;
+        if (path.indexOf(resourceRootName) == -1) {
+            realpath = resourceRootName + path;
+        }
+        else {
+            realpath = path;
+        }
+        result.realPath = realpath;
+        return result;
 
 
 
-}
+    }
 
     var configFileName: string;
 
     var resourceRootName: string;
 
     var config: config.Config;
-    
+
 
     function onChange(type, resourceFile: resource.ResourceFile) {
 
@@ -195,11 +195,11 @@ module RES {
         }
         return null;
     }
-    
-    function getResourceFromName(name:string):config.Resource{
-        
+
+    function getResourceFromName(name: string): config.Resource {
+
         return config.resources[name];
-        
+
     }
 
     export function loadConfig(configFile: string, resourceRoot: string) {
@@ -227,14 +227,19 @@ module RES {
         console.log(`loadgroup:${groupName}`, JSON.stringify(group))
     }
 
-    export function getRes(resourceName): any {
-        var config = getResourceFromName(resourceName);
-        var resource = resourceManager.readFile(config.url);
+    export function getRes(resourceName: string): any {
+        let config = getResourceFromName(resourceName);
+        let resource = resourceManager.readFile(config.url);
         return resource ? resource.data : null;
     }
 
-    export function getResAsync(name: string, callback: Function, thisObject: any) {
-
+    export function getResAsync(resourceName: string, callback: Function, thisObject: any) {
+        let config = getResourceFromName(resourceName);
+        let c = (r: resource.ResourceFile) => {
+            var callbackData = r ? r.data : null;
+            callback.call(thisObject, callbackData);
+        }
+        resourceManager.preload(config.url, c);
     }
 
 }
