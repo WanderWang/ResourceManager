@@ -58,20 +58,7 @@ class ResourceShim extends egret.EventDispatcher {
 
 var shim: ResourceShim = new ResourceShim();
 
-var resourceManager = new resource.Core();
-resourceManager.resourceMatcher = (path) => {
 
-    if (path.match(/.json/)) {
-        return new resource.JsonResource();
-    }
-    else if (path.match(/.jpg/) || path.match(/.png/)) {
-        return new resource.ImageResource();
-    }
-    return null;
-
-
-
-}
 
 module RES {
 
@@ -115,12 +102,36 @@ module RES {
     export function removeEventListener(type: string, listener: Function, thisObject: any) {
         shim.removeEventListener(type, listener, thisObject);
     }
+    
+    export function resourceMatcher(path){
+    var result:resource.ResourceFile;
+    if (path.match(/.json/)) {
+        result = new resource.JsonResource();
+    }
+    else if (path.match(/.jpg/) || path.match(/.png/)) {
+        result = new resource.ImageResource();
+    }
+    result.path = path;
+    var realpath;
+    if (path.indexOf(resourceRootName) == -1){
+        realpath = resourceRootName + path; 
+    }
+    else{
+        realpath = path;
+    }
+    result.realPath = realpath;
+    return result;
+
+
+
+}
 
     var configFileName: string;
 
     var resourceRootName: string;
 
     var config: config.Config;
+    
 
     function onChange(type, resourceFile: resource.ResourceFile) {
 
@@ -201,7 +212,7 @@ module RES {
         let loadResource = (resourceName) => {
             let resource = config.resources[resourceName];
             if (resource) {
-                resourceManager.preload(resourceRootName + "/" + resource.url);
+                resourceManager.preload(resource.url);
             }
         }
         if (resourceNames) {
@@ -219,3 +230,7 @@ module RES {
     }
 
 }
+
+
+var resourceManager = new resource.Core();
+resourceManager.resourceMatcher = RES.resourceMatcher;

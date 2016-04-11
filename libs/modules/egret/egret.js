@@ -1567,12 +1567,6 @@ var egret;
         );
         /**
          * @private
-         */
-        p.$getAnchorOffsetX = function () {
-            return this.$DisplayObject[12 /* anchorOffsetX */];
-        };
-        /**
-         * @private
          *
          * @param value
          * @returns
@@ -1608,12 +1602,6 @@ var egret;
                 this.$setAnchorOffsetY(value);
             }
         );
-        /**
-         * @private
-         */
-        p.$getAnchorOffsetY = function () {
-            return this.$DisplayObject[13 /* anchorOffsetY */];
-        };
         /**
          * @private
          *
@@ -2777,24 +2765,6 @@ var egret;
             }
             if (this.$stage) {
                 if (oldBitmapData) {
-                    var oldHashCode;
-                    if (oldBitmapData._bitmapData && oldBitmapData._bitmapData.hashCode) {
-                        oldHashCode = oldBitmapData._bitmapData.hashCode;
-                    }
-                    else {
-                        oldHashCode = oldBitmapData.hashCode;
-                    }
-                    var newHashCode;
-                    if (value._bitmapData && value._bitmapData.hashCode) {
-                        newHashCode = value._bitmapData.hashCode;
-                    }
-                    else {
-                        newHashCode = value.hashCode;
-                    }
-                    if (oldHashCode == newHashCode) {
-                        this.$invalidateContentBounds();
-                        return true;
-                    }
                     egret.Texture.$removeDisplayObject(this, oldBitmapData);
                 }
                 egret.Texture.$addDisplayObject(this, value);
@@ -5223,9 +5193,6 @@ var egret;
             this.maxX = -Infinity;
             this.maxY = -Infinity;
         };
-        /**
-         * @private
-         */
         p.extendBoundsByPoint = function (x, y) {
             this.extendBoundsByX(x);
             this.extendBoundsByY(y);
@@ -5236,7 +5203,6 @@ var egret;
         p.extendBoundsByX = function (x) {
             this.minX = Math.min(this.minX, x - this.topLeftStrokeWidth);
             this.maxX = Math.max(this.maxX, x + this.bottomRightStrokeWidth);
-            this.updateNodeBounds();
         };
         /**
          * @private
@@ -5244,21 +5210,9 @@ var egret;
         p.extendBoundsByY = function (y) {
             this.minY = Math.min(this.minY, y - this.topLeftStrokeWidth);
             this.maxY = Math.max(this.maxY, y + this.bottomRightStrokeWidth);
-            this.updateNodeBounds();
-        };
-        /**
-         * @private
-         */
-        p.updateNodeBounds = function () {
-            var node = this.$renderNode;
-            node.x = this.minX;
-            node.y = this.minY;
-            node.width = this.maxX - this.minX;
-            node.height = this.maxY - this.minY;
         };
         /**
          * 更新当前的lineX和lineY值，并标记尺寸失效。
-         * @private
          */
         p.updatePosition = function (x, y) {
             if (!this.includeLastPosition) {
@@ -5783,8 +5737,10 @@ var egret;
         };
         Texture.$addDisplayObject = function (displayObject, bitmapData) {
             var hashCode;
-            if (bitmapData._bitmapData && bitmapData._bitmapData.hashCode) {
-                hashCode = bitmapData._bitmapData.hashCode;
+            if (bitmapData instanceof Texture) {
+                if (bitmapData._bitmapData) {
+                    hashCode = bitmapData._bitmapData.hashCode;
+                }
             }
             else {
                 hashCode = bitmapData.hashCode;
@@ -5803,8 +5759,10 @@ var egret;
         };
         Texture.$removeDisplayObject = function (displayObject, bitmapData) {
             var hashCode;
-            if (bitmapData._bitmapData && bitmapData._bitmapData.hashCode) {
-                hashCode = bitmapData._bitmapData.hashCode;
+            if (bitmapData instanceof Texture) {
+                if (bitmapData._bitmapData) {
+                    hashCode = bitmapData._bitmapData.hashCode;
+                }
             }
             else {
                 hashCode = bitmapData.hashCode;
@@ -5823,8 +5781,10 @@ var egret;
         };
         Texture.$invalidate = function (bitmapData) {
             var hashCode;
-            if (bitmapData._bitmapData && bitmapData._bitmapData.hashCode) {
-                hashCode = bitmapData._bitmapData.hashCode;
+            if (bitmapData instanceof Texture) {
+                if (bitmapData._bitmapData) {
+                    hashCode = bitmapData._bitmapData.hashCode;
+                }
             }
             else {
                 hashCode = bitmapData.hashCode;
@@ -5845,8 +5805,10 @@ var egret;
         };
         Texture.$dispose = function (bitmapData) {
             var hashCode;
-            if (bitmapData._bitmapData && bitmapData._bitmapData.hashCode) {
-                hashCode = bitmapData._bitmapData.hashCode;
+            if (bitmapData instanceof Texture) {
+                if (bitmapData._bitmapData) {
+                    hashCode = bitmapData._bitmapData.hashCode;
+                }
             }
             else {
                 hashCode = bitmapData.hashCode;
@@ -14469,7 +14431,6 @@ var egret;
             p.cleanBeforeRender = function () {
                 _super.prototype.cleanBeforeRender.call(this);
                 this.image = null;
-                this.matrix = null;
             };
             return BitmapNode;
         }(sys.RenderNode));
@@ -14519,11 +14480,6 @@ var egret;
             __extends(GraphicsNode, _super);
             function GraphicsNode() {
                 _super.call(this);
-                /**
-                 * 脏渲染标记
-                 * 暂时调用lineStyle,beginFill,beginGradientFill标记,实际应该draw时候标记在Path2D
-                 */
-                this.dirtyRender = true;
                 this.type = 3 /* GraphicsNode */;
             }
             var d = __define,c=GraphicsNode,p=c.prototype;
@@ -14545,7 +14501,6 @@ var egret;
                 else {
                     this.drawData.push(path);
                 }
-                this.dirtyRender = true;
                 return path;
             };
             /**
@@ -14586,7 +14541,6 @@ var egret;
                 else {
                     this.drawData.push(path);
                 }
-                this.dirtyRender = true;
                 return path;
             };
             /**
@@ -14615,7 +14569,6 @@ var egret;
                 path.joints = joints;
                 path.miterLimit = miterLimit;
                 this.drawData.push(path);
-                this.dirtyRender = true;
                 return path;
             };
             /**
@@ -14623,7 +14576,6 @@ var egret;
              */
             p.clear = function () {
                 this.drawData.length = 0;
-                this.dirtyRender = true;
             };
             /**
              * 覆盖父类方法，不自动清空缓存的绘图数据，改为手动调用clear()方法清空。
@@ -14920,10 +14872,6 @@ var egret;
                  * 字体名称
                  */
                 this.fontFamily = "Arial";
-                /**
-                 * 脏渲染标记
-                 */
-                this.dirtyRender = true;
                 this.type = 2 /* TextNode */;
             }
             var d = __define,c=TextNode,p=c.prototype;
@@ -14933,7 +14881,6 @@ var egret;
             p.drawText = function (x, y, text, format) {
                 this.drawData.push(x, y, text, format);
                 this.renderCount++;
-                this.dirtyRender = true;
             };
             /**
              * 在显示对象的$render()方法被调用前，自动清空自身的drawData数据。
@@ -15497,6 +15444,7 @@ var egret;
                     node.needRedraw = true;
                 }
                 if (node.needRedraw) {
+                    drawCalls++;
                     var renderAlpha;
                     var m;
                     if (root) {
@@ -15513,7 +15461,7 @@ var egret;
                         context.setTransform(m.a, m.b, m.c, m.d, m.tx + matrix.tx, m.ty + matrix.ty);
                     }
                     context.globalAlpha = renderAlpha;
-                    drawCalls += this.renderNode(node, context);
+                    this.renderNode(node, context);
                     node.needRedraw = false;
                 }
             }
@@ -15529,7 +15477,7 @@ var egret;
                         continue;
                     }
                     if ((child.$blendMode !== 0 ||
-                        (child.$mask && (child.$mask.$parentDisplayList || root)))) {
+                        (child.$mask && child.$mask.$parentDisplayList))) {
                         drawCalls += this.drawWithClip(child, context, dirtyList, matrix, clipRegion, root);
                     }
                     else if (child.$scrollRect || child.$maskRect) {
@@ -15561,19 +15509,17 @@ var egret;
             }
             var scrollRect = displayObject.$scrollRect ? displayObject.$scrollRect : displayObject.$maskRect;
             var mask = displayObject.$mask;
-            //if (mask && !mask.$parentDisplayList) {
-            //    mask = null; //如果遮罩不在显示列表中，放弃绘制遮罩。
-            //}
+            if (mask && !mask.$parentDisplayList) {
+                mask = null; //如果遮罩不在显示列表中，放弃绘制遮罩。
+            }
             //计算scrollRect和mask的clip区域是否需要绘制，不需要就直接返回，跳过所有子项的遍历。
             var maskRegion;
             var displayMatrix = egret.Matrix.create();
             displayMatrix.copyFrom(displayObject.$getConcatenatedMatrix());
-            if (displayObject.$parentDisplayList) {
-                var displayRoot = displayObject.$parentDisplayList.root;
-                var invertedMatrix;
-                if (displayRoot !== displayObject.$stage) {
-                    displayObject.$getConcatenatedMatrixAt(displayRoot, displayMatrix);
-                }
+            var displayRoot = displayObject.$parentDisplayList.root;
+            var invertedMatrix;
+            if (displayRoot !== displayObject.$stage) {
+                displayObject.$getConcatenatedMatrixAt(displayRoot, displayMatrix);
             }
             if (mask) {
                 var bounds = mask.$getOriginalBounds();
@@ -15611,39 +15557,16 @@ var egret;
                 region.updateRegion(bounds, displayMatrix);
             }
             var found = false;
-            if (!dirtyList) {
-                found = true;
-            }
-            else {
-                var l = dirtyList.length;
-                for (var j = 0; j < l; j++) {
-                    if (region.intersects(dirtyList[j])) {
-                        found = true;
-                        break;
-                    }
+            var l = dirtyList.length;
+            for (var j = 0; j < l; j++) {
+                if (region.intersects(dirtyList[j])) {
+                    found = true;
+                    break;
                 }
             }
             if (!found) {
                 egret.sys.Region.release(region);
                 egret.Matrix.release(displayMatrix);
-                return drawCalls;
-            }
-            //没有遮罩,同时显示对象没有子项
-            if (!mask && (!displayObject.$children || displayObject.$children.length == 0)) {
-                if (scrollRect) {
-                    var m = displayMatrix;
-                    displayContext.setTransform(m.a, m.b, m.c, m.d, m.tx - region.minX, m.ty - region.minY);
-                    displayContext.beginPath();
-                    displayContext.rect(scrollRect.x, scrollRect.y, scrollRect.width, scrollRect.height);
-                    displayContext.clip();
-                }
-                if (hasBlendMode) {
-                    context.globalCompositeOperation = compositeOp;
-                }
-                drawCalls += this.drawDisplayObject(displayObject, context, dirtyList, matrix, displayObject.$displayList, clipRegion, root);
-                if (hasBlendMode) {
-                    context.globalCompositeOperation = defaultCompositeOp;
-                }
                 return drawCalls;
             }
             //绘制显示对象自身，若有scrollRect，应用clip
@@ -15727,11 +15650,9 @@ var egret;
             }
             var m = egret.Matrix.create();
             m.copyFrom(displayObject.$getConcatenatedMatrix());
-            if (displayObject.$parentDisplayList) {
-                var displayRoot = displayObject.$parentDisplayList.root;
-                if (displayRoot !== displayObject.$stage) {
-                    displayObject.$getConcatenatedMatrixAt(displayRoot, m);
-                }
+            var displayRoot = displayObject.$parentDisplayList.root;
+            if (displayRoot !== displayObject.$stage) {
+                displayObject.$getConcatenatedMatrixAt(displayRoot, m);
             }
             var region = egret.sys.Region.create();
             if (!scrollRect.isEmpty()) {
@@ -15743,16 +15664,11 @@ var egret;
                 return drawCalls;
             }
             var found = false;
-            if (!dirtyList) {
-                found = true;
-            }
-            else {
-                var l = dirtyList.length;
-                for (var j = 0; j < l; j++) {
-                    if (region.intersects(dirtyList[j])) {
-                        found = true;
-                        break;
-                    }
+            var l = dirtyList.length;
+            for (var j = 0; j < l; j++) {
+                if (region.intersects(dirtyList[j])) {
+                    found = true;
+                    break;
                 }
             }
             if (!found) {
@@ -15788,21 +15704,18 @@ var egret;
          * @private
          */
         p.renderNode = function (node, context, forHitTest) {
-            var drawCalls = 0;
             switch (node.type) {
                 case 1 /* BitmapNode */:
-                    drawCalls = this.renderBitmap(node, context);
+                    this.renderBitmap(node, context);
                     break;
                 case 2 /* TextNode */:
-                    drawCalls = 1;
                     this.renderText(node, context);
                     break;
                 case 3 /* GraphicsNode */:
-                    drawCalls = 1;
                     this.renderGraphics(node, context, forHitTest);
                     break;
                 case 4 /* GroupNode */:
-                    drawCalls = this.renderGroup(node, context);
+                    this.renderGroup(node, context);
                     break;
                 case 5 /* SetTransformNode */:
                     context.setTransform(node.drawData[0], node.drawData[1], node.drawData[2], node.drawData[3], node.drawData[4], node.drawData[5]);
@@ -15811,34 +15724,19 @@ var egret;
                     context.globalAlpha = node.drawData[0];
                     break;
             }
-            return drawCalls;
         };
         /**
          * @private
          */
         p.renderBitmap = function (node, context) {
             var image = node.image;
-            if (context.$imageSmoothingEnabled != node.smoothing) {
-                context.imageSmoothingEnabled = node.smoothing;
-                context.$imageSmoothingEnabled = node.smoothing;
-            }
+            context["imageSmoothingEnabled"] = node.smoothing;
             var data = node.drawData;
             var length = data.length;
             var pos = 0;
-            var m = node.matrix;
-            if (m) {
-                context.save();
-                context.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
-            }
-            var drawCalls = 0;
             while (pos < length) {
-                drawCalls++;
                 context.drawImage(image, data[pos++], data[pos++], data[pos++], data[pos++], data[pos++], data[pos++], data[pos++], data[pos++]);
             }
-            if (m) {
-                context.restore();
-            }
-            return drawCalls;
         };
         /**
          * @private
@@ -15941,14 +15839,12 @@ var egret;
             }
         };
         p.renderGroup = function (groupNode, context) {
-            var drawCalls = 0;
             var children = groupNode.drawData;
             var length = children.length;
             for (var i = 0; i < length; i++) {
                 var node = children[i];
-                drawCalls += this.renderNode(node, context);
+                this.renderNode(node, context);
             }
-            return drawCalls;
         };
         /**
          * @private
@@ -19066,12 +18962,6 @@ var egret;
             this.$TextField[18 /* textLinesChanged */] = true;
         };
         p.$update = function (bounds) {
-            var tmpBounds = this.$getRenderBounds();
-            var result = _super.prototype.$update.call(this, tmpBounds);
-            egret.Rectangle.release(tmpBounds);
-            return result;
-        };
-        p.$getRenderBounds = function () {
             var bounds = this.$getContentBounds();
             var tmpBounds = egret.Rectangle.create();
             tmpBounds.copyFrom(bounds);
@@ -19088,7 +18978,9 @@ var egret;
             tmpBounds.y -= _strokeDouble + 2;
             tmpBounds.width = Math.ceil(tmpBounds.width) + 4;
             tmpBounds.height = Math.ceil(tmpBounds.height) + 4;
-            return tmpBounds;
+            var result = _super.prototype.$update.call(this, tmpBounds);
+            egret.Rectangle.release(tmpBounds);
+            return result;
         };
         /**
          * @private
@@ -19118,13 +19010,6 @@ var egret;
             }
             var underLines = this.drawText();
             this.fillBackground(underLines);
-            var bounds = this.$getRenderBounds();
-            var node = this.textNode;
-            node.x = bounds.x;
-            node.y = bounds.y;
-            node.width = bounds.width;
-            node.height = bounds.height;
-            egret.Rectangle.release(bounds);
         };
         d(p, "textFlow"
             /**
@@ -22368,9 +22253,9 @@ var egret;
      * @example
      * <pre>
      *     var instance = new egret.Sprite();
-     *     egret.log(egret.is(instance,"egret.Sprite"))  //true
-     *     egret.log(egret.is(instance,"egret.DisplayObjectContainer"))  //true
-     *     egret.log(egret.is(instance,"egret.Bitmap"))  //false
+     *     egret.log(egret.is(instance,egret.Types.Sprite))  //true
+     *     egret.log(egret.is(instance,egret.Types.DisplayObjectContainer))  //true
+     *     egret.log(egret.is(instance,egret.Types.Bitmap))  //false
      * </pre>
      * @see egret.registerClass()
      * @version Egret 2.4
@@ -22385,9 +22270,9 @@ var egret;
      * @example
      * <pre>
      *     var instance = new egret.Sprite();
-     *     egret.log(egret.is(instance,"egret.Sprite"))  //true
-     *     egret.log(egret.is(instance,"egret.DisplayObjectContainer"))  //true
-     *     egret.log(egret.is(instance,"egret.Bitmap"))  //false
+     *     egret.log(egret.is(instance,egret.Types.Sprite))  //true
+     *     egret.log(egret.is(instance,egret.Types.DisplayObjectContainer))  //true
+     *     egret.log(egret.is(instance,egret.Types.Bitmap))  //false
      * </pre>
      * @see egret.registerClass()
      * @version Egret 2.4

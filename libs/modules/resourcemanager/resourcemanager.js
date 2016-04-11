@@ -33,7 +33,6 @@ var resource;
             }
             var tasks = paths.map(function (p) {
                 var resource = _this.resourceMatcher(p);
-                resource.path = p;
                 return resource;
             });
             var q = async.priorityQueue(function (task, callback) {
@@ -68,7 +67,7 @@ var resource;
         }
         JsonResource.prototype.preload = function (callback) {
             this.callback = callback;
-            var request = new egret.URLRequest(this.path);
+            var request = new egret.URLRequest(this.realPath);
             var loader = new egret.URLLoader();
             loader.dataFormat = egret.URLLoaderDataFormat.TEXT;
             loader.addEventListener(egret.Event.COMPLETE, this.onComplete, this);
@@ -94,7 +93,7 @@ var resource;
         function ImageResource() {
         }
         ImageResource.prototype.preload = function (callback) {
-            var request = new egret.URLRequest(this.path);
+            var request = new egret.URLRequest(this.realPath);
             var loader = new egret.URLLoader();
             loader.dataFormat = egret.URLLoaderDataFormat.TEXTURE;
             loader.addEventListener(egret.Event.COMPLETE, this.onComplete, this);
@@ -126,16 +125,6 @@ var ResourceShim = (function (_super) {
     return ResourceShim;
 }(egret.EventDispatcher));
 var shim = new ResourceShim();
-var resourceManager = new resource.Core();
-resourceManager.resourceMatcher = function (path) {
-    if (path.match(/.json/)) {
-        return new resource.JsonResource();
-    }
-    else if (path.match(/.jpg/) || path.match(/.png/)) {
-        return new resource.ImageResource();
-    }
-    return null;
-};
 var RES;
 (function (RES) {
     var ResourceEvent = (function (_super) {
@@ -163,6 +152,26 @@ var RES;
         shim.removeEventListener(type, listener, thisObject);
     }
     RES.removeEventListener = removeEventListener;
+    function resourceMatcher(path) {
+        var result;
+        if (path.match(/.json/)) {
+            result = new resource.JsonResource();
+        }
+        else if (path.match(/.jpg/) || path.match(/.png/)) {
+            result = new resource.ImageResource();
+        }
+        result.path = path;
+        var realpath;
+        if (path.indexOf(resourceRootName) == -1) {
+            realpath = resourceRootName + path;
+        }
+        else {
+            realpath = path;
+        }
+        result.realPath = realpath;
+        return result;
+    }
+    RES.resourceMatcher = resourceMatcher;
     var configFileName;
     var resourceRootName;
     var config;
@@ -230,7 +239,7 @@ var RES;
         var loadResource = function (resourceName) {
             var resource = config.resources[resourceName];
             if (resource) {
-                resourceManager.preload(resourceRootName + "/" + resource.url);
+                resourceManager.preload(resource.url);
             }
         };
         if (resourceNames) {
@@ -247,3 +256,5 @@ var RES;
     }
     RES.getResAsync = getResAsync;
 })(RES || (RES = {}));
+var resourceManager = new resource.Core();
+resourceManager.resourceMatcher = RES.resourceMatcher;

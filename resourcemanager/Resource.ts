@@ -5,9 +5,11 @@
 module resource {
 
     export interface ResourceFile {
-
-
+        
+        
         path: string;
+        
+        realPath:string;
 
         data: any;
 
@@ -24,6 +26,8 @@ module resource {
     export class JsonResource implements ResourceFile {
 
         path: string;
+        
+        realPath:string;
 
         data: any;
 
@@ -31,7 +35,7 @@ module resource {
 
         preload(callback) {
             this.callback = callback;
-            var request: egret.URLRequest = new egret.URLRequest(this.path);
+            var request: egret.URLRequest = new egret.URLRequest(this.realPath);
             var loader: egret.URLLoader = new egret.URLLoader();
             loader.dataFormat = egret.URLLoaderDataFormat.TEXT;
             loader.addEventListener(egret.Event.COMPLETE, this.onComplete, this);
@@ -66,13 +70,15 @@ module resource {
     export class ImageResource implements ResourceFile {
 
         path: string;
+        
+        realPath:string;
 
         data: egret.Texture;
         
         callback:Function;
 
         preload(callback) {
-            var request: egret.URLRequest = new egret.URLRequest(this.path);
+            var request: egret.URLRequest = new egret.URLRequest(this.realPath);
             var loader: egret.URLLoader = new egret.URLLoader();
             loader.dataFormat = egret.URLLoaderDataFormat.TEXTURE;
             loader.addEventListener(egret.Event.COMPLETE, this.onComplete, this);

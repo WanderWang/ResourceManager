@@ -18,6 +18,7 @@ declare module resource {
 declare module resource {
     interface ResourceFile {
         path: string;
+        realPath: string;
         data: any;
         preload(callback: any): any;
         load(callback: any): any;
@@ -26,6 +27,7 @@ declare module resource {
     }
     class JsonResource implements ResourceFile {
         path: string;
+        realPath: string;
         data: any;
         callback: Function;
         preload(callback: any): void;
@@ -36,6 +38,7 @@ declare module resource {
     }
     class ImageResource implements ResourceFile {
         path: string;
+        realPath: string;
         data: egret.Texture;
         callback: Function;
         preload(callback: any): void;
@@ -72,7 +75,6 @@ declare module RES.config {
 declare class ResourceShim extends egret.EventDispatcher {
 }
 declare var shim: ResourceShim;
-declare var resourceManager: resource.Core;
 declare module RES {
     class ResourceEvent extends egret.Event {
         groupName: string;
@@ -93,8 +95,10 @@ declare module RES {
     }
     function addEventListener(type: string, listener: Function, thisObject: any): void;
     function removeEventListener(type: string, listener: Function, thisObject: any): void;
+    function resourceMatcher(path: any): resource.ResourceFile;
     function loadConfig(configFile: string, resourceRoot: string): void;
     function loadGroup(groupName: any): void;
     function getRes(resourceName: any): any;
     function getResAsync(name: string, callback: Function, thisObject: any): void;
 }
+declare var resourceManager: resource.Core;

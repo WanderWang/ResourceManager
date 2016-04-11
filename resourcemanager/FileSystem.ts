@@ -68,7 +68,6 @@ module resource {
             }
             var tasks = paths.map((p) => {
                 var resource = this.resourceMatcher(p);
-                resource.path = p;
                 return resource;
 
             });
