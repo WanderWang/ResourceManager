@@ -8,10 +8,10 @@ declare module resource {
         onChange: (type, resource: ResourceFile) => void;
         resourceMatcher: (url) => ResourceFile;
         private q;
-        private config;
+        private fs;
         exists(): Boolean;
         readFile(path: string): ResourceFile;
-        writeFile(): void;
+        writeFile(r: ResourceFile): void;
         preload(path: string | Array<string>): void;
     }
 }

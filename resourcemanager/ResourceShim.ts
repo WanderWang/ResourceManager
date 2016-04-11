@@ -195,6 +195,12 @@ module RES {
         }
         return null;
     }
+    
+    function getResourceFromName(name:string):config.Resource{
+        
+        return config.resources[name];
+        
+    }
 
     export function loadConfig(configFile: string, resourceRoot: string) {
         configFileName = configFile;
@@ -222,7 +228,9 @@ module RES {
     }
 
     export function getRes(resourceName): any {
-        return null;
+        var config = getResourceFromName(resourceName);
+        var resource = resourceManager.readFile(config.url);
+        return resource ? resource.data : null;
     }
 
     export function getResAsync(name: string, callback: Function, thisObject: any) {

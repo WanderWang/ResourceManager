@@ -3,7 +3,7 @@
 module resource {
 
 
-    interface ResourceConfigMap {
+    interface FileSystemMap {
 
 
         // resources
@@ -13,13 +13,13 @@ module resource {
 
     }
 
-    interface ResourceConfig {
+    // interface ResourceConfig {
 
 
-        loadedState: State;
+    //     loadedState: State;
 
 
-    }
+    // }
 
     export enum State {
 
@@ -43,18 +43,18 @@ module resource {
 
         private q;
 
-        private config: ResourceConfigMap;
+        private fs: FileSystemMap = {};
 
         public exists(): Boolean {
             return true;
         }
 
         public readFile(path: string): ResourceFile {
-            return new ImageResource();
+            return this.fs[path];
         }
 
-        public writeFile(): void {
-
+        public writeFile(r: ResourceFile): void {
+            this.fs[r.path] = r;
         }
 
         public preload(path: string | Array<string>) {
@@ -66,17 +66,14 @@ module resource {
             else {
                 paths = path;
             }
-            var tasks = paths.map((p) => {
-                var resource = this.resourceMatcher(p);
-                return resource;
-
-            });
+            var tasks = paths.map(this.resourceMatcher);
 
 
-            var q = async.priorityQueue<ResourceFile>((task: ResourceFile, callback) => {
-                console.log('load ' + task.path);
-                task.preload(() => {
-                    this.onChange("complete", task);
+            var q = async.priorityQueue<ResourceFile>((r: ResourceFile, callback) => {
+                console.log('load ' + r.path);
+                r.preload(() => {
+                    this.writeFile(r);
+                    this.onChange("complete", r);
                     callback();
                 })
             }, 2);

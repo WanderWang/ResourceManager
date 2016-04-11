@@ -5,6 +5,9 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var resource;
 (function (resource_1) {
+    // interface ResourceConfig {
+    //     loadedState: State;
+    // }
     (function (State) {
         State[State["UNLOADED"] = 0] = "UNLOADED";
         State[State["LOADING"] = 1] = "LOADING";
@@ -13,14 +16,16 @@ var resource;
     var State = resource_1.State;
     var Core = (function () {
         function Core() {
+            this.fs = {};
         }
         Core.prototype.exists = function () {
             return true;
         };
         Core.prototype.readFile = function (path) {
-            return new resource_1.ImageResource();
+            return this.fs[path];
         };
-        Core.prototype.writeFile = function () {
+        Core.prototype.writeFile = function (r) {
+            this.fs[r.path] = r;
         };
         Core.prototype.preload = function (path) {
             var _this = this;
@@ -31,14 +36,12 @@ var resource;
             else {
                 paths = path;
             }
-            var tasks = paths.map(function (p) {
-                var resource = _this.resourceMatcher(p);
-                return resource;
-            });
-            var q = async.priorityQueue(function (task, callback) {
-                console.log('load ' + task.path);
-                task.preload(function () {
-                    _this.onChange("complete", task);
+            var tasks = paths.map(this.resourceMatcher);
+            var q = async.priorityQueue(function (r, callback) {
+                console.log('load ' + r.path);
+                r.preload(function () {
+                    _this.writeFile(r);
+                    _this.onChange("complete", r);
                     callback();
                 });
             }, 2);
@@ -226,6 +229,9 @@ var RES;
         }
         return null;
     }
+    function getResourceFromName(name) {
+        return config.resources[name];
+    }
     function loadConfig(configFile, resourceRoot) {
         configFileName = configFile;
         resourceRootName = resourceRoot;
@@ -249,7 +255,9 @@ var RES;
     }
     RES.loadGroup = loadGroup;
     function getRes(resourceName) {
-        return null;
+        var config = getResourceFromName(resourceName);
+        var resource = resourceManager.readFile(config.url);
+        return resource ? resource.data : null;
     }
     RES.getRes = getRes;
     function getResAsync(name, callback, thisObject) {
