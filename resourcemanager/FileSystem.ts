@@ -56,8 +56,16 @@ module resource {
         public writeFile(r: ResourceFile): void {
             this.fs[r.path] = r;
         }
+        
+        public deleteFile(path:string):void{
+            var file = this.readFile(path);
+            if (file){
+                file.dispose();
+                delete this.fs[path];
+            }
+        }
 
-        public preload(path: string, callback?: (r: ResourceFile) => void) {
+        public preload(path: string, priority:number = 0,callback?: (r: ResourceFile) => void) {
 
             var paths: Array<string> = [path];
        
@@ -87,7 +95,7 @@ module resource {
 
             // add some items to the queue
 
-            q.push(tasks, 0, function (err) {
+            q.push(tasks, priority, function (err) {
                 console.log('finished processing foo');
             });
 

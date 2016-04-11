@@ -9,4 +9,10 @@
 ## TODO
 
 * 使用 ```egret-new``` 命令完成测试项目构建
+* 兼容以下逻辑：
+    * ~~```RES.getResByUrl```~~
+    * ~~```RES.hasRes```~~
+    * ~~```RES.loadGroup(param1,param2)```~~
+    * ```RES.createGroup($groupName, $subGroups, true)```
+    * ~~```RES.destoryRES```~~
 

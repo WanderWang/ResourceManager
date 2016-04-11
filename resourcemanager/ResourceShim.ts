@@ -121,9 +121,6 @@ module RES {
         }
         result.realPath = realpath;
         return result;
-
-
-
     }
 
     var configFileName: string;
@@ -211,14 +208,14 @@ module RES {
 
     }
 
-    export function loadGroup(groupName) {
+    export function loadGroup(groupName, priority = 0) {
 
         let group = config.groups[groupName];
         let resourceNames = group.keys.split(",");
         let loadResource = (resourceName) => {
             let resource = config.resources[resourceName];
             if (resource) {
-                resourceManager.preload(resource.url);
+                resourceManager.preload(resource.url, priority);
             }
         }
         if (resourceNames) {
@@ -239,7 +236,45 @@ module RES {
             var callbackData = r ? r.data : null;
             callback.call(thisObject, callbackData);
         }
-        resourceManager.preload(config.url, c);
+        resourceManager.preload(config.url, 0, c);
+    }
+
+    /**
+     * todo 应该判断name和subkey
+     */
+    export function hasRes(resourceName: string) {
+        let config = getResourceFromName(resourceName);
+        return config != null;
+    }
+
+    export function getResByUrl(url: string, callback: Function, thisObject: any, type: string = "") {
+        if (type) {
+            console.warn(`RES.getResByUrl 的 type 参数已被废弃`);
+        }
+        let c = (r: resource.ResourceFile) => {
+            var callbackData = r ? r.data : null;
+            callback.call(thisObject, callbackData);
+        }
+        resourceManager.preload(url, 0, c);
+    }
+
+    export function destroyRes(name: string, force?: boolean): boolean {
+        var group = config.groups[name];
+        var resources: Array<config.Resource> = [];
+        if (group) {
+            resources = group.resources;
+        }
+        else if (config.resources[name]) {
+            resources = [config.resources[name]]
+        }
+
+        let mapper = (resourceConfig: config.Resource) => {
+            resourceManager.deleteFile(resourceConfig.url);
+        }
+
+        resources.map(mapper);
+        return true;
+
     }
 
 }
