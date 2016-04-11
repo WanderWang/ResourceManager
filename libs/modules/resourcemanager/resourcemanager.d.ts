@@ -12,7 +12,8 @@ declare module resource {
         exists(): Boolean;
         readFile(path: string): ResourceFile;
         writeFile(r: ResourceFile): void;
-        preload(path: string, callback?: (r: ResourceFile) => void): void;
+        deleteFile(path: string): void;
+        preload(path: string, priority?: number, callback?: (r: ResourceFile) => void): void;
     }
 }
 declare module resource {
@@ -76,6 +77,9 @@ declare class ResourceShim extends egret.EventDispatcher {
 }
 declare var shim: ResourceShim;
 declare module RES {
+    class ResourceItem {
+        static TYPE_IMAGE: string;
+    }
     class ResourceEvent extends egret.Event {
         groupName: string;
         itemsLoaded: number;
@@ -97,8 +101,16 @@ declare module RES {
     function removeEventListener(type: string, listener: Function, thisObject: any): void;
     function resourceMatcher(path: any): resource.ResourceFile;
     function loadConfig(configFile: string, resourceRoot: string): void;
-    function loadGroup(groupName: any): void;
+    function loadGroup(groupName: any, priority?: number): void;
     function getRes(resourceName: string): any;
     function getResAsync(resourceName: string, callback: Function, thisObject: any): void;
+    /**
+     * todo 应该判断name和subkey
+     */
+    function hasRes(resourceName: string): boolean;
+    function getResByUrl(url: string, callback: Function, thisObject: any, type?: string): void;
+    function destroyRes(name: string, force?: boolean): boolean;
+    function isGroupLoaded(groupName: string): Boolean;
+    function createGroup(groupName: any, resources: Array<any>, override?: Boolean): void;
 }
 declare var resourceManager: resource.Core;

@@ -1,5 +1,6 @@
 module RES.config {
 
+
     export interface Config {
 
         resources: ResourceCollection;
@@ -61,6 +62,17 @@ var shim: ResourceShim = new ResourceShim();
 
 
 module RES {
+
+
+    export class ResourceItem {
+
+        static TYPE_IMAGE = "image";
+
+        // name:string;
+
+
+
+    }
 
     export class ResourceEvent extends egret.Event {
 
@@ -274,7 +286,32 @@ module RES {
 
         resources.map(mapper);
         return true;
+    }
+    
+    export function isGroupLoaded(groupName:string):Boolean{
+        var group = config.groups[groupName];
+        return (group && group.state == resource.State.LOADED);
+    }
 
+
+    export function createGroup(groupName, resources: Array<any>, override: Boolean = true) {
+        let r: Array<config.Resource> = [];
+        resources.map((item) => {
+            if (config.resources[item]) {
+                r = r.concat(config.resources[item])
+            }
+            else if (config.groups[item]) {
+                r = r.concat(config.groups[item].resources);
+            }
+        })
+        let keys = r.map((item) => item.name).join(",");
+        config.groups[groupName] = {
+            name: groupName,
+            keys: keys,
+            state: resource.State.UNLOADED,
+            resources: r
+
+        }
     }
 
 }

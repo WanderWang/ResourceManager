@@ -27,8 +27,16 @@ var resource;
         Core.prototype.writeFile = function (r) {
             this.fs[r.path] = r;
         };
-        Core.prototype.preload = function (path, callback) {
+        Core.prototype.deleteFile = function (path) {
+            var file = this.readFile(path);
+            if (file) {
+                file.dispose();
+                delete this.fs[path];
+            }
+        };
+        Core.prototype.preload = function (path, priority, callback) {
             var _this = this;
+            if (priority === void 0) { priority = 0; }
             var paths = [path];
             var tasks = paths.map(this.resourceMatcher);
             var q = async.priorityQueue(function (r, c) {
@@ -48,7 +56,7 @@ var resource;
                 console.log('all items have been processed');
             };
             // add some items to the queue
-            q.push(tasks, 0, function (err) {
+            q.push(tasks, priority, function (err) {
                 console.log('finished processing foo');
             });
         };
@@ -123,6 +131,13 @@ var ResourceShim = (function (_super) {
 var shim = new ResourceShim();
 var RES;
 (function (RES) {
+    var ResourceItem = (function () {
+        function ResourceItem() {
+        }
+        ResourceItem.TYPE_IMAGE = "image";
+        return ResourceItem;
+    }());
+    RES.ResourceItem = ResourceItem;
     var ResourceEvent = (function (_super) {
         __extends(ResourceEvent, _super);
         function ResourceEvent() {
@@ -232,13 +247,14 @@ var RES;
         resourceManager.preload(configFile);
     }
     RES.loadConfig = loadConfig;
-    function loadGroup(groupName) {
+    function loadGroup(groupName, priority) {
+        if (priority === void 0) { priority = 0; }
         var group = config.groups[groupName];
         var resourceNames = group.keys.split(",");
         var loadResource = function (resourceName) {
             var resource = config.resources[resourceName];
             if (resource) {
-                resourceManager.preload(resource.url);
+                resourceManager.preload(resource.url, priority);
             }
         };
         if (resourceNames) {
@@ -259,9 +275,70 @@ var RES;
             var callbackData = r ? r.data : null;
             callback.call(thisObject, callbackData);
         };
-        resourceManager.preload(config.url, c);
+        resourceManager.preload(config.url, 0, c);
     }
     RES.getResAsync = getResAsync;
+    /**
+     * todo 应该判断name和subkey
+     */
+    function hasRes(resourceName) {
+        var config = getResourceFromName(resourceName);
+        return config != null;
+    }
+    RES.hasRes = hasRes;
+    function getResByUrl(url, callback, thisObject, type) {
+        if (type === void 0) { type = ""; }
+        if (type) {
+            console.warn("RES.getResByUrl \u7684 type \u53C2\u6570\u5DF2\u88AB\u5E9F\u5F03");
+        }
+        var c = function (r) {
+            var callbackData = r ? r.data : null;
+            callback.call(thisObject, callbackData);
+        };
+        resourceManager.preload(url, 0, c);
+    }
+    RES.getResByUrl = getResByUrl;
+    function destroyRes(name, force) {
+        var group = config.groups[name];
+        var resources = [];
+        if (group) {
+            resources = group.resources;
+        }
+        else if (config.resources[name]) {
+            resources = [config.resources[name]];
+        }
+        var mapper = function (resourceConfig) {
+            resourceManager.deleteFile(resourceConfig.url);
+        };
+        resources.map(mapper);
+        return true;
+    }
+    RES.destroyRes = destroyRes;
+    function isGroupLoaded(groupName) {
+        var group = config.groups[groupName];
+        return (group && group.state == resource.State.LOADED);
+    }
+    RES.isGroupLoaded = isGroupLoaded;
+    function createGroup(groupName, resources, override) {
+        if (override === void 0) { override = true; }
+        var r = [];
+        resources.map(function (item) {
+            if (config.resources[item]) {
+                r = r.concat(config.resources[item]);
+            }
+            else if (config.groups[item]) {
+                r = r.concat(config.groups[item].resources);
+            }
+        });
+        var keys = r.map(function (item) { return item.name; }).join(",");
+        config.groups[groupName] = {
+            name: groupName,
+            keys: keys,
+            state: resource.State.UNLOADED,
+            resources: r
+        };
+    }
+    RES.createGroup = createGroup;
 })(RES || (RES = {}));
 var resourceManager = new resource.Core();
 resourceManager.resourceMatcher = RES.resourceMatcher;
