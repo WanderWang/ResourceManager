@@ -1,8 +1,11 @@
 {
    "compilerOptions": {
-      "target": "es5"
+      "target": "es5",
+      "inlineSourceMap":true,
+      "allowUnreachableCode": true
    },
    "exclude": [
-      "node_modules","bin","libs/modules/resourcemanager"
+      "node_modules","bin","libs/modules/resourcemanager",
+      "libs/modules/async"
    ]
 }

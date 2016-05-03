@@ -13,6 +13,6 @@
     * ~~```RES.getResByUrl```~~
     * ~~```RES.hasRes```~~
     * ~~```RES.loadGroup(param1,param2)```~~
-    * ```RES.createGroup($groupName, $subGroups, true)```
+    * ~~```RES.createGroup($groupName, $subGroups, true)```~~
     * ~~```RES.destoryRES```~~
 
