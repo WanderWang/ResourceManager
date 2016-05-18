@@ -4,7 +4,7 @@
 
 module resource {
 
-    export interface ResourceFile {
+    export interface AbstructResource {
         
         
         path: string;
@@ -23,7 +23,7 @@ module resource {
 
     }
 
-    export class JsonResource implements ResourceFile {
+    export class JsonResource implements AbstructResource {
 
         path: string;
         
@@ -67,7 +67,7 @@ module resource {
 
     }
 
-    export class ImageResource implements ResourceFile {
+    export class TextureResource implements AbstructResource {
 
         path: string;
         

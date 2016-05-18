@@ -116,12 +116,12 @@ module RES {
     }
 
     export function resourceMatcher(path) {
-        var result: resource.ResourceFile;
+        var result: resource.AbstructResource;
         if (path.match(/.json/)) {
             result = new resource.JsonResource();
         }
         else if (path.match(/.jpg/) || path.match(/.png/)) {
-            result = new resource.ImageResource();
+            result = new resource.TextureResource();
         }
         result.path = path;
         var realpath;
@@ -142,13 +142,13 @@ module RES {
     var config: config.Config;
 
 
-    function onChange(type, resourceFile: resource.ResourceFile) {
+    function onChange(type, AbstructResource: resource.AbstructResource) {
 
-        console.log(`load ${type} : ${resourceFile.path}`)
+        console.log(`load ${type} : ${AbstructResource.path}`)
 
-        if (resourceFile.path == configFileName) {
+        if (AbstructResource.path == configFileName) {
 
-            let data = resourceFile.data;
+            let data = AbstructResource.data;
             let groups: config.GroupCollection = {};
             let resources: config.ResourceCollection = {};
 
@@ -160,8 +160,15 @@ module RES {
 
             const groupmapper = (group: config.Group) => {
                 groups[group.name] = group;
-                let resourceNames = group.keys.split(",");
-                group.resources = resourceNames.map((resourceName) => resources[resourceName]);
+                if (group.keys) {
+                    let resourceNames = group.keys.split(",");
+                    group.resources = resourceNames.map((resourceName) => resources[resourceName]);
+                }
+                else {
+                    group.resources = [];
+                }
+
+
             }
             data.groups.forEach(groupmapper);
 
@@ -174,7 +181,7 @@ module RES {
         }
         else {
 
-            var resourceConfig = getResourceFromUrl(resourceFile.path);
+            var resourceConfig = getResourceFromUrl(AbstructResource.path);
             resourceConfig.state = resource.State.LOADED;
             for (var groupName in config.groups) {
                 var group = config.groups[groupName];
@@ -244,7 +251,7 @@ module RES {
 
     export function getResAsync(resourceName: string, callback: Function, thisObject: any) {
         let config = getResourceFromName(resourceName);
-        let c = (r: resource.ResourceFile) => {
+        let c = (r: resource.AbstructResource) => {
             var callbackData = r ? r.data : null;
             callback.call(thisObject, callbackData);
         }
@@ -263,7 +270,7 @@ module RES {
         if (type) {
             console.warn(`RES.getResByUrl 的 type 参数已被废弃`);
         }
-        let c = (r: resource.ResourceFile) => {
+        let c = (r: resource.AbstructResource) => {
             var callbackData = r ? r.data : null;
             callback.call(thisObject, callbackData);
         }
@@ -287,8 +294,8 @@ module RES {
         resources.map(mapper);
         return true;
     }
-    
-    export function isGroupLoaded(groupName:string):Boolean{
+
+    export function isGroupLoaded(groupName: string): Boolean {
         var group = config.groups[groupName];
         return (group && group.state == resource.State.LOADED);
     }

@@ -5,19 +5,19 @@ declare module resource {
         LOADED = 2,
     }
     class Core {
-        onChange: (type, resource: ResourceFile) => void;
-        resourceMatcher: (url) => ResourceFile;
+        onChange: (type, resource: AbstructResource) => void;
+        resourceMatcher: (url) => AbstructResource;
         private q;
         private fs;
         exists(): Boolean;
-        readFile(path: string): ResourceFile;
-        writeFile(r: ResourceFile): void;
+        readFile(path: string): AbstructResource;
+        writeFile(r: AbstructResource): void;
         deleteFile(path: string): void;
-        preload(path: string, priority?: number, callback?: (r: ResourceFile) => void): void;
+        preload(path: string, priority?: number, callback?: (r: AbstructResource) => void): void;
     }
 }
 declare module resource {
-    interface ResourceFile {
+    interface AbstructResource {
         path: string;
         realPath: string;
         data: any;
@@ -26,7 +26,7 @@ declare module resource {
         unload(): any;
         dispose(): any;
     }
-    class JsonResource implements ResourceFile {
+    class JsonResource implements AbstructResource {
         path: string;
         realPath: string;
         data: any;
@@ -37,7 +37,7 @@ declare module resource {
         unload(): void;
         dispose(): void;
     }
-    class ImageResource implements ResourceFile {
+    class TextureResource implements AbstructResource {
         path: string;
         realPath: string;
         data: egret.Texture;
@@ -99,7 +99,7 @@ declare module RES {
     }
     function addEventListener(type: string, listener: Function, thisObject: any): void;
     function removeEventListener(type: string, listener: Function, thisObject: any): void;
-    function resourceMatcher(path: any): resource.ResourceFile;
+    function resourceMatcher(path: any): resource.AbstructResource;
     function loadConfig(configFile: string, resourceRoot: string): void;
     function loadGroup(groupName: any, priority?: number): void;
     function getRes(resourceName: string): any;

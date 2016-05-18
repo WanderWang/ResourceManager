@@ -3,23 +3,20 @@
 module resource {
 
 
+
+
+    /**
+     * 文件系统，key 为文件的虚拟路径，value 为一个 Resource 对象
+     */
     interface FileSystemMap {
 
 
         // resources
 
-        [index: string]: ResourceFile;
+        [index: string]: AbstructResource;
 
 
     }
-
-    // interface ResourceConfig {
-
-
-    //     loadedState: State;
-
-
-    // }
 
     export enum State {
 
@@ -36,10 +33,10 @@ module resource {
 
     export class Core {
 
-        public onChange: (type, resource: ResourceFile) => void
+        public onChange: (type, resource: AbstructResource) => void
 
 
-        public resourceMatcher: (url) => ResourceFile;
+        public resourceMatcher: (url) => AbstructResource;
 
         private q;
 
@@ -49,11 +46,11 @@ module resource {
             return true;
         }
 
-        public readFile(path: string): ResourceFile {
+        public readFile(path: string): AbstructResource {
             return this.fs[path];
         }
 
-        public writeFile(r: ResourceFile): void {
+        public writeFile(r: AbstructResource): void {
             this.fs[r.path] = r;
         }
         
@@ -65,16 +62,17 @@ module resource {
             }
         }
 
-        public preload(path: string, priority:number = 0,callback?: (r: ResourceFile) => void) {
+        public preload(path: string, priority:number = 0,callback?: (r: AbstructResource) => void) {
 
             var paths: Array<string> = [path];
        
             var tasks = paths.map(this.resourceMatcher);
 
 
-            var q = async.priorityQueue<ResourceFile>((r: ResourceFile, c) => {
+            var q = async.priorityQueue<AbstructResource>((r: AbstructResource, c) => {
                 console.log('load ' + r.path);
                 r.preload(() => {
+                    console.log ('load complete : ' + r.path)
                     this.writeFile(r);
                     if (callback) {
                         callback(r);

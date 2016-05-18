@@ -5,9 +5,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var resource;
 (function (resource_1) {
-    // interface ResourceConfig {
-    //     loadedState: State;
-    // }
     (function (State) {
         State[State["UNLOADED"] = 0] = "UNLOADED";
         State[State["LOADING"] = 1] = "LOADING";
@@ -42,6 +39,7 @@ var resource;
             var q = async.priorityQueue(function (r, c) {
                 console.log('load ' + r.path);
                 r.preload(function () {
+                    console.log('load complete : ' + r.path);
                     _this.writeFile(r);
                     if (callback) {
                         callback(r);
@@ -93,10 +91,10 @@ var resource;
         return JsonResource;
     }());
     resource.JsonResource = JsonResource;
-    var ImageResource = (function () {
-        function ImageResource() {
+    var TextureResource = (function () {
+        function TextureResource() {
         }
-        ImageResource.prototype.preload = function (callback) {
+        TextureResource.prototype.preload = function (callback) {
             var request = new egret.URLRequest(this.realPath);
             var loader = new egret.URLLoader();
             loader.dataFormat = egret.URLLoaderDataFormat.TEXTURE;
@@ -104,22 +102,22 @@ var resource;
             loader.load(request);
             this.callback = callback;
         };
-        ImageResource.prototype.onComplete = function (e) {
+        TextureResource.prototype.onComplete = function (e) {
             var loader = e.target;
             loader.removeEventListener(egret.Event.COMPLETE, this.onComplete, this);
             var texture = loader.data;
             this.data = texture;
             this.callback();
         };
-        ImageResource.prototype.load = function (callback) {
+        TextureResource.prototype.load = function (callback) {
         };
-        ImageResource.prototype.unload = function () {
+        TextureResource.prototype.unload = function () {
         };
-        ImageResource.prototype.dispose = function () {
+        TextureResource.prototype.dispose = function () {
         };
-        return ImageResource;
+        return TextureResource;
     }());
-    resource.ImageResource = ImageResource;
+    resource.TextureResource = TextureResource;
 })(resource || (resource = {}));
 var ResourceShim = (function (_super) {
     __extends(ResourceShim, _super);
@@ -169,7 +167,7 @@ var RES;
             result = new resource.JsonResource();
         }
         else if (path.match(/.jpg/) || path.match(/.png/)) {
-            result = new resource.ImageResource();
+            result = new resource.TextureResource();
         }
         result.path = path;
         var realpath;
@@ -186,10 +184,10 @@ var RES;
     var configFileName;
     var resourceRootName;
     var config;
-    function onChange(type, resourceFile) {
-        console.log("load " + type + " : " + resourceFile.path);
-        if (resourceFile.path == configFileName) {
-            var data = resourceFile.data;
+    function onChange(type, AbstructResource) {
+        console.log("load " + type + " : " + AbstructResource.path);
+        if (AbstructResource.path == configFileName) {
+            var data = AbstructResource.data;
             var groups_1 = {};
             var resources_1 = {};
             var resourcemapper = function (resourceConfig) {
@@ -199,8 +197,13 @@ var RES;
             data.resources.forEach(resourcemapper);
             var groupmapper = function (group) {
                 groups_1[group.name] = group;
-                var resourceNames = group.keys.split(",");
-                group.resources = resourceNames.map(function (resourceName) { return resources_1[resourceName]; });
+                if (group.keys) {
+                    var resourceNames = group.keys.split(",");
+                    group.resources = resourceNames.map(function (resourceName) { return resources_1[resourceName]; });
+                }
+                else {
+                    group.resources = [];
+                }
             };
             data.groups.forEach(groupmapper);
             config = { resources: resources_1, groups: groups_1 };
@@ -209,7 +212,7 @@ var RES;
             window['config'] = config;
         }
         else {
-            var resourceConfig = getResourceFromUrl(resourceFile.path);
+            var resourceConfig = getResourceFromUrl(AbstructResource.path);
             resourceConfig.state = resource.State.LOADED;
             for (var groupName in config.groups) {
                 var group = config.groups[groupName];
